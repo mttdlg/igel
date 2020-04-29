@@ -1,0 +1,69 @@
+A classic try/catch approach at least is foreseen.
+now-language and later-language will both have exceptions.
+A now-exception happens at compile time.
+a later-exception happens at run time.
+
+# Possible syntaxes:
+
+# 1)
+try {
+  ...
+} catch foo {
+  ...
+} catch bar {
+  ...
+} catch baz {
+  ...
+} else {
+  ...
+}
+
+# 2)
+try {
+  ...
+} catch {   # we can probably re-use the word 'catch', no need for a separate
+            # one: if it's followed by a block, we know what to do.
+            # Blocks should NOT produce a result by themselves, so we can
+            # distinguish them syntactically/semantically from expressions.
+            # If we want a result, we do something like [eval { ... }]
+    foo: { ... }
+    bar: { ... }
+    baz: { ... }
+    default: { ... } # All other exceptions (but an exception must have taken place)
+} else {
+  ... # No exception has taken place.
+}
+
+#
+# Footnotes
+#
+
+Might or might not work on an alternate syntax for exception handling
+(something to explore: a syntax inspired by footnotes, to avoid
+cluttering main code with 'catch' blocks -- lines watched for
+excetptional execution paths will have some small marker, and
+refer to larger blocks placed below the main code, like footnotes.)
+
+Here is a quick mock-up, not meant to be FUNCTIONAL, just to provide
+a basic example of the general idea:
+
+    filename = "file.txt"
+    set f [open filename "r" | fileopen]
+    ...
+    close f | fileclose
+
+    footnotes {
+       fileopen: {
+               FileNotFoundException:   { error "file '" filename "' could not be found!" }
+               FileUnreadableException: { error "file '" filename "' cannot be read!" }
+           }
+       fileclose: {
+               CloseFileException:      { error "file '" filename "' could not be closed!" }
+           }
+    }
+
+What needs to be defined is the exact mechanism for associating a note to
+a line/block in a way that is accurate, uses (if possible) existing syntax,
+but is minimally invasive and does not require awkward rewrites.
+Current plan is to use pipe as a special syntax.
+

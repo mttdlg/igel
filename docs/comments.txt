@@ -1,0 +1,12 @@
+Comments are initiated by # , to be consistent with most scripting/shell languges and seamlessly
+integrate with the shebang notation in *ix-like system.
+
+They can be anywhere in the source (except, of course, inside strings, where '#' is a literal '#'), so
+no restriction about '#' being the command like in TCL.
+
+The behaviour of comments should not be surprising to someone familiar with bash, Perl, or Python.
+
+Do we need a 'parenthesized' comment syntax, with matching parentheses? Probably not.
+In any case, candidates could be {:#: or [:#: .
+Disallowing comments from starting in the middle of a named block sounds
+like the kind of thing that would be acceptable, then '#' would be taken as the ID of the block.

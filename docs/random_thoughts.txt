@@ -1,0 +1,144 @@
+Remember what base was used for initializing a variable with a literal.
+Use that representation as default/preferred way to represent a value as output.
+
+var x: int = 0xff # ---> when printing 'x', the default will be to print it in hexadecimal.
+
+Original plan for quote:
+    [' a b c] -> [quote a b c]
+
+Now we have ' at the BEGINNING as a marker for symbols, though.
+We would like to use it for our HDL, where instead of saying:
+
+        a <= a + 1
+
+We say:
+
+        set a' (a + 1)
+
+Quasiquote:
+    [` a b c ,d ,@e ] -> [quasiquote a b c [unquote d] [splice-unquote e]]
+
+macro vector {String name; Int range-max; Int range-min} {
+    # var [List [List SyntaxNode]] result []
+    # typedef Block [List [List SyntaxNode]] # -distinct
+    var Block result; # Block -> [List [List SyntaxNode]]
+    for i [range range-max range-min] {
+        set pin_name "pin_[val_i]".->symbol
+        result.add [` connect ,pin_name ]
+    }
+    return result
+}
+
+---
+Original plan:
+{   -> [[
+{`: -> [` [
+}   -> ]]
+Now {} will mark a BLOCK, a separate construct.
+The AST node's value /is/ a list of nodes, each node being a list of node itself, but {} and [[]] are NOT exchangeable!
+{} is an AST token of type BLOCK, [ ... ] is an AST node of type... uh... LIST? SQUARE-LIST? Gotta decide exact name.
+
+{quasiquote:
+    print ,foo
+    print bar
+    print ,@baz # -> ponder how to implement. Recursively? Note: this would forbid commas for other purposes. 
+:quasiquote}
+
+# New syntax:
+#
+# fill-in {
+#   _foo_ foo
+# } -splice {
+#   _@baz_ baz
+# } { 
+#   print _foo_
+#   print bar
+#   print _@baz_
+# }
+
+---
+
+"Type" model:
+    Work on the 'certification' model.
+    "Certify" that the object respects some properties.
+    It's kind of like "it belongs to set X"
+
+    So, you could have
+
+    type penguin
+    certify penguin {
+        bird
+        walking-animal
+    }
+
+    Each certification (bird, walking-animal) could optionally provide
+    self-tests to ensure that the certification has been applied properly.
+    There could be varying degrees of trust: from "Ok, it's been certified
+    in the right hierarchy, so we trust the user did all the work" to "Wait
+    a minute, before I certify you I have to run some tests..."
+
+    Being a 'bird' will not automatically guarrantee it's a flying-animal.
+    But there could be a 'flying-bird'?
+    (why? Probably easier to specify 'flying and bird')
+    Check for type will be a boolean expression.
+
+    certify printable [or string number]
+    certify printable (string or number)
+    certify block_definition_printable {x} { # Note: x is a NOW-object. So, theoretically, checks on its NOW-value are possible (is it an odd integer constant?)
+        if (is(x, string) or [is x number]) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+
+    certify small_constant {x: [and now.const now.comparable now.real-able]} {
+        return (x now.< 10)
+    }
+    
+    certify block_definition_printable {x} {
+        if (is(x, string) or [is x number]) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+proc fly-to {flier: flying-bird or airplane}
+
+set Drumstick ^.Drumstick  # ^ = Local module top
+set Drum      ^.Drum       # ^ = Local module top
+
+hit-drum-with {drum: drum; hitter: drumstick} # Common-Lisp-like 'self is nothing special' approach.
+
+First tentative approach:
+* keep type matches separated by module (innermost module matches first, then outer, then outher.... outermost last)
+* Concept of 'more spcific/less specific' will be considered and refined later (for now, we approximate using the former)
+
+---
+
+Dot resolution:
+
+insert c <rvalue> # "insert" can be hooked to check that we are inserting
+                  # an object that respects properties.
+                  # Checking can range from 'no checks'
+                  # to static compile time checking (hook runs at 'now' time, C/C++ style)
+                  # to dynamic run time checking (hook inserts extra run time checks)
+                  # to a mixture of compile/run time checks.
+                  # There are two notions of 'type':
+                  # data type: it's a property of the value. Stuff like 'int' or 'string', etc.
+                  # conceptually, it's a set the item belongs to
+                  # type check: it's like a 'qualifications check': only objects that satisfy
+                  # the requirements will be let through.
+                  # 'slots' will check types ('insert'), and will be used instead
+                  # of type declarations for variables or formal arguments
+                  # slots are 'now' objects and have only two methods:
+                  # 'insert' and 'get'
+
+
+set {
+    a   1
+    b   2
+    c'  3
+}

@@ -1,0 +1,92 @@
+VHDL, Verilog HDL synthesis:
+it feels a lot like one had a simulator and tried to use simulation constructs to do synthesis.
+One must think in terms of patterns for synthesis, but write them in terms of patterns for simulators.
+Proposed approach for an IGEL-based HDL language: synthesis patters should be expressed as synthesis patterns.
+
+
+State within the HDL model will be declared once, kind of like a variable.
+No need to have the classic HDL pattern
+
+<declare signal 1>
+<declare signal 2>
+...
+
+process/task/always (sensitivity list: clock, reset) {
+    if reset_triggered {
+        <reset signal 1>
+        <reset signal 2>
+    } else {
+        ...
+    }
+}
+
+Instead, we will have something like:
+
+    stg <signal 1> -reset <signal 1 reset value>
+
+The process will be declared differently depending on whether it is synchronous or asynchronous.
+Will have to see how to handle multiple clocks.
+Might have specific process block for FSMs.
+
+enum my_state_enum { 'IDLE = [bits "00"] ; 'WORKING = [bits "01"] ; 'CONFUSED = [bits "10"]; 'ERROR [bits "11"]}
+# ^^^ who said that enum types need to be associated with INTEGERS?
+# consider concept where enums (which are expressed as SYMBOLS, a type 
+# completely separate from IDs/variables, so no ambiguity exists) can
+# be associated to an arbitrary object.
+# Maybe, in this case,
+# instead of 'enum' (which imples order), it should
+# be more like a 'dictionary'
+
+synproc proc_name {
+    # stg -> storage, will imply flip-flops for synthesis.
+    # note: for simulation, the types passed WILL BE MVL-IFIED
+    # so, 'bit' does not mean just 'bit', it means 1 bit of MVL
+    # baz can be [mvl "X"], [mvl "Z"], true, or false
+    # in lists and aggregates, every single bit can be MVL
+    stg foo : [bits 2] -reset 0
+    stg bar : bit  -reset 0
+    stg baz : bool -reset FALSE
+    stg qux : Object -reset { ... } # Yes, there is a plan to explore whether to allow objects to be
+                                    # MVL-ified and synthesized. We will probably restrict their
+                                    # structure, but.
+    stg state: my_state_enum
+    ...
+    switch state {
+        'IDLE     { ... }
+        'WORKING  {
+                    ...
+                     if bar { set bar' FALSE }   # "set bar' TRUE" would be something like "bar <= '0';" in VHDL or "bar <= 1'b0 " in Verilog
+                                                 # (yes, VHDL has booleans, but this is an /mvl/ boolean. Not sure if VHDL has those. Would
+                                                 # have to check)
+                    ... 
+                  }
+        'CONFUSED { ... }
+        'ERROR    { ... }
+        default   { ... }
+    }
+}
+
+#
+# It should be relatively straightforward to express register files
+# using only the language's constructs:
+#
+const erf: RegFile = {
+    name = foo
+    desc = "Example Register File"
+
+    register WritableAreaControl = {
+        field WritableStart : [bits 16] {
+            reset:  0x8000  # There should be automatic range checks (compatible with type?)
+            access: rw 
+        }
+        field WritableEnd   : [bits 16] {
+            reset:  0xffff 
+            access: rw 
+        }
+    }
+    # reset = 0xffff8000 # not necessary, but can be added for checking purposes, or because that's what an automated generator provides?
+    # This is an advanced feature and might not be implemented immediately.
+}
+
+print erf.WritableAreaControl.WritableStart.reset # data member
+erf.WritableAreaControl.WritableStart.do_reset # method

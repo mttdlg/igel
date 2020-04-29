@@ -1,0 +1,33 @@
+now.Int
+
+now.String 
+
+now.Syms ....
+    now.Bool = [now.Syms [: 'TRUE 'FALSE :] ]
+
+now.Struct {
+    a: Foo = 1 
+    b: Bar = "2"
+    c: Baz = 'THREE
+}
+
+#
+# Note: what you are interested in is probably some form
+# of structural subtyping
+#
+
+#
+# Toy problem to help understand the situation:
+# consider the following types:
+#
+# int8
+# int16
+# bool
+# string
+#
+# A few example functions (add, xor, or, and, cat)
+#
+# and try to construct a type system that works for both
+# compilation and RTL synthesis
+# 
+#

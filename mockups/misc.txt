@@ -1,0 +1,95 @@
+#!/usr/bin/env igel
+
+# var name [ : type ] [ = value ]
+# fn name { arg1 [: type1] [= defval1]; ... } : type { body }
+# fn name { arg1 [: type1] [= defval1]; ... } : type = { body }
+
+# fn bottles-string {Int n} : String {
+#     case n {
+#         0 { "no more bottles" }
+#         1 { "one bottle" }
+#         else { [cat n " bottles"] }
+#     }
+# }
+
+#
+# Syntax 1:
+#
+# Function call:  [a b c]
+# List:           [: a b c :] (or {: a b c :}, or (: a b c :) )
+
+#
+# Syntax 2:
+#
+# List:           [a b c]
+# Function call:  [a: b c]
+# But what about functions as first class objects?
+
+#
+# For continue/break:
+# named blocks?
+#
+# fun foo {n: Int} Int {
+#   bar: while [f n] {
+#       add n 1
+#       baz: while [g n] {
+#           add n 2
+#           if [eq n 100] { repeat  bar: } # continue
+#           if [eq n 101] { skip    baz: } # break
+#           if [ge n 999] { return  n }    # return
+#       }
+#   }
+# }
+#
+# Or maybe they should be handled as exceptions?
+# (Like, 'continue' exception, 'break' exception, 'return' exception, etc?)
+#
+# Maybe:
+#
+# while [f n] {:named: bar
+#   ...
+# }
+#
+# Should we provide call/cc under the hood? Support it if user wants to write it?
+# What model? Stack? Continuations on the heap?
+#
+# Todo: allow continuing in the next line
+# by using pipe?
+#
+# var foo String
+#   | "Hello, world!"
+#
+# Or maybe "->" ?
+#
+# var foo String ->
+#   "Hello, world!"
+#
+# Or use [] ?
+#
+# var foo String [ cat
+#   "Hello"]
+
+# fun bottlesString {n Int} String {
+#     var result String [cat
+#         n # How to automatically convert to string? Call n.stdh.str ? (STDH -> STanDard Hooks)
+#         # [n.ToString 16] # Hexadecimal
+#         " bottle"
+#         [if [ne n 1] "" "s"]
+#     ]
+#     return result
+# }
+
+# set i 0
+# {block: foo {repeating Bool false}
+#     if repeating {
+#         print "Repeating..."
+#     }
+#     while (i < 10) {
+#         if [eq [idx my_list i] "retry"] {
+#             tail [foo true]
+#         } elif [eq [idx my_list i] "found"] {
+#             set found true
+#             break foo
+#         }
+#     }
+# }]

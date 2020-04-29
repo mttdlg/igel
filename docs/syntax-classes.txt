@@ -1,0 +1,7 @@
+lval:
+    Assignable at now-time.
+exp:
+    Expression
+block:
+    What it says on the tin. Makes sense only at now-time, unless special
+    modules are imported.

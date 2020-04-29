@@ -1,0 +1,73 @@
+# Concept question:
+# what about something which /might/ work like an int,
+# but requires runtime checks? (Like, for instance, TCL-like strings?)
+# Current hypothesis: probaly allow, provided runtime checks /are/ run before
+# /usage/. Issue with exceptions?
+# Add special type :no-runtime-checks for when /strict/
+# behaviour is allowed?
+var strinteger [:string :int]
+
+#
+#
+
+# Old plan:
+for i -from 1 -to 10 {
+}
+
+# New plan:
+for i from 1 to 10
+for i in [range 1 10]
+
+foreach i iterable { # no, go with " for i in iterable "
+}
+
+while <condition> {
+    ...
+}
+
+repeat {
+    ...
+} until <condition>
+
+if <a> {
+    ...
+} elif <b> {
+    ...
+} elif <c> {
+    ...
+} else {
+    ....
+}
+
+same semantics:
+
+cond {
+    <a> { ... }
+    <b> { ... }
+    <c> { ... }
+    default { .... }
+}
+
+This is more readable
+
+switch <value> {
+    <x> { ... } # Possibly accept ranges.
+    <y> { ... }
+    <z> { ... }
+    default { .... }
+}
+
+in a sense, 'cond' works like a 'switch' where 'value' is true.
+NOTE: one will probably not implement it that way for efficiency reasons.
+It might be possible to implement switch as a macro which uses cond, though,
+unless one needs to optimize the table for performance, or to map the construct
+to a specific target language construct. Remember: the IGEL system is designed to
+be flexible in what language it targets, it is not restricted to a model where
+the target language is assembly or an assembly-like intermediate representation.
+We might target assembly, but also VHDL, Verilog, SystemVerilog, C, C++, Python, etc.
+
+Alignment of indentation is an important consideration in this language.
+Good formatting helps reading and comprehension.
+Might provide '*' as an alternative to 'default', so it is shorter and
+default block aligns vertically with other blocks.
+Might also accept the complete omission of default.

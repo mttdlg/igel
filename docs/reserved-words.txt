@@ -1,0 +1,128 @@
+There are no reserved words A PRIORI (built into the syntax,
+before defining a language).
+It is, however, ALLOWED for a language to reserve words!
+For instance, 'true' and 'false' could be the canonical boolean words.
+'else' or 'default' could be a reserved word:
+
+    case foo {
+        0 { bar }
+        1 { baz }
+        default { qux }
+    }
+
+Alternately:
+    case foo {
+        0 { bar }
+        1 { baz }
+        * { qux }
+    }
+Aligns better. Could reserve a single asterisk (but allow asterisk-followed-by-id).
+
+Should we have builtins like *true and *false, which can be aliased?
+We will need to KNOW what the canonical values are, for printing...
+Will we have enumerated types? If so, false and true could be such?
+
+later {
+    enum bool {
+        false = 0
+        true  = 1
+    }
+
+    proc _.if_then {cond : [exp bool]; then_block : block} {
+        var _after_then_ : label = [gensym asm_labelspace]
+        compile_bool cond
+        emit {asm:
+            jz r0, _after_then_
+        :asm}
+
+        compile_block then_block
+
+        emit {asm:
+            _after_then_:
+        :asm}
+    }
+
+    proc _.if_then_else {
+            cond : [exp bool]
+            then_block : block
+            else_block: block
+    } {
+        var _after_then_ : label = [gensym asm_labelspace]
+        var _after_else_ : label = [gensym asm_labelspace]
+        compile_bool cond
+        emit {asm:
+            jz r0, _after_then_
+        :asm}
+
+        compile_block then_block
+
+        emit {asm:
+            jp _after_else_
+            _after_then_:
+        :asm}
+
+        compile_block else_block
+
+        emit {asm:
+            _after_else_:
+        :asm}
+    }
+}
+
+This way, the whole concept of locally reserved words and no a priori reservation should work nicely.
+
+CURRENT PROPOSAL:
+We have symbols, but we do not use them for parsing like in LISP.
+Instead, it is a separate syntax from which to build enumerated types. Symbols will not conflict with regular identifiers.
+
+
+    enum FooEnum { 'foo = 5 ; 'bar ; 'baz ; 'qux }
+    var x : FooEnum = 'bar
+    var x1 : FooEnum = [x.next]
+    print x
+
+    enum BarEnum { foo = 0 ; bar ; baz ; qux } # -> enum is smart enough to add the 'quote' by itself. You pick the style you prefer.
+                                               # No risks for unintended "'" being added: all items are symbols, and  symbols are not
+                                               # allowed to start with ''. So, distinguishing between "foo", "'foo", and "''foo" is not
+                                               # an issue, because in this case it is going to be "'foo", unambiguously.
+    var x : FooEnum = 'bar
+    var x1 : FooEnum = [x.next]
+    print x
+
+    *** NOTE ***  association between symbol->number is specific to an ENUM. Outside the context of an ENUM, it is meaningless.
+    enum FooEnum { 'foo = 5 ; 'bar = 6 }
+    enum BarEnum { 'foo = 0 ; 'bar = 1 }
+    print ['foo.as-int] # Meaningless -- symbols have no int associated
+    var x: FooEnum = 'foo ;  print [x.as-int] # -> 5
+    var x: BarEnum = 'foo ;  print [x.as-int] # -> 0
+    print [[FooEnum 'foo].as-int] # -> 5
+    print [[BarEnum 'foo].as-int] # -> 0
+    # This is similar to how reals and uints can share the same syntactic symbols but mean different types
+    # [repr x] -> [FooEnum 'foo] # QUESTION: how to uniquely idenfify FooEnum outside of namespaces? Do we
+    #                                        shift responsibility on user?
+    # [repr x namespace] # ?
+    # NOTE: repr should probably be now.repr, maybe it can take current scope into account...
+    # ...will each type ALWAYS have a globally unique now-name during a compilation?
+    # [~.foo.bar.baz.module.sub.wheee.FooEnum 'foo] --> no, module should not be aware of its containers
+    #                                                   unless explicitly told.
+    # Perhaps repr is relative to the now-scope/namespace/module it has been called from...
+    #
+    # Proposed solution: as usual, delegate to integrator.
+    #
+    # * Types have built-in official name (e.g. Bool). They assume their name is unique and clear enough to the reader.
+    # * If there is ambiguity (like, we are integrating two enumerated types both named TokenKind), it is the responsibility
+    #   of the integrator to explicitly rename one or both.
+    # * There might even be a 'type name registration' step where each type registers its name for external representation purposes.
+    #   If said name exists, a now.exception is raised.
+
+Booleans:
+
+    enum Bool { 'false = 0 ; 'true = 1 } # Default is: start from 0. This case makes the default explicit.
+    const false: Bool = 'false
+    const true : Bool = 'true
+
+When printing, we print 'true / 'false
+
+    import {
+        Parser = fooParser  # -> type is registered as "foo.Parser" within this lexical block?
+    }

@@ -1,0 +1,9 @@
+syntax-check: just check that syntax is correct.
+    * Might be run standalone.
+    * Might be run together with interpretation.
+    * /Could/ it be run without interpretation after debugging, to save time?
+      Maybe interpretation can *require* a syntax check, but if it is not
+      explicitly required, it will be skipped?
+      What about if/then/else where we build up as part of interpretation?
+      Would that be duplicated effort?
+      Can we sort of streamline it?

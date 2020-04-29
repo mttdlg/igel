@@ -1,0 +1,5 @@
+#!/usr/bin/env igel
+struct type {
+    name : String
+    is_a? : [Proc {Type} Bool]
+}

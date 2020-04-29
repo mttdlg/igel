@@ -1,0 +1,10 @@
+Example:list_proxy, which is an object that redirects 'dot' and 'get' to a different list.
+
+Python:
+list_proxy.insert(item) -> [[dot list_proxy insert] item]
+list_proxy[5]           -> [[get list_proxy 5] -> [[dot list_proxy __get__] 5] ?
+
+The implementation of list_proxy can then use 'rawattr' to implement 'dot', in order to get keys from its own dictionary and access to the real list.
+
+TODO: replace 'rawattr' with 'getattr'? And possibly add 'setattr'?
+      See what Python does.

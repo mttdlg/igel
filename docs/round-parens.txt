@@ -1,0 +1,81 @@
+Considering special token for ID + parenthesis
+
+    identifier( 
+
+Note: NO SPACE between identifier and (
+If there is a space:
+
+    identifier (
+
+It is actually two separate tokens.
+Current plan: left-round ALWAYS has an identifier (string) associated.
+
+    example(
+
+would generate a token similar to this:
+
+    {:token:
+        kind : 'LEFT-ROUND    
+        value: "example"
+    }
+
+(instead of having a different kind, each kind of token could be
+a separate class, all of them inheriting from a base token class)
+
+A pure left-round parenthesis results in a token where the string
+is ""
+
+Those tokens can be hooked into from the now language.
+As a special case, identifier "" will be used for INFIX NOTATION
+An infix notation parser (written in the now-language) will be
+provided as part of the system, as a 'form' (macro-like construct)
+so that, for instance:
+
+    while (i <= 10) {
+        print "count: " i
+        set i (i + 1)
+    }
+
+will be *expanded* (macro-style) into:
+
+    while [lt i 10] {
+        print "hello"
+        set i [add i 1]
+    }
+
+The translation rules will be specified through a table, so it
+will be easier to write target rules for a specific later-compiler.
+Most of them can probably just re-use the default implementation?
+Default rules:
+    * Input language will fit C syntax (if one wanted an alternative
+      syntax, could just use IGEL's native prefix syntax)
+    * identifiers will be recognised according to C rules by default.
+      Some quoting mechanism will be provided to use arithmetic symbols
+      as part of identifiers or literals (IGEL allows this)
+
+      hello             -> hello
+      hello-world       -> [sub hello world]
+      hello\-world      -> hello-world
+      hello\-world-1    -> [sub hello-world 1]
+      function_call(1)  -> [function_call 1]
+
+      *false            -> SYNTAX ERROR
+      \*false           -> *false
+      
+    * We have a table which associates a function name to operators 
+      (+ => "add", - => "sub", * => "mul", etc.)
+      This MIGHT need to be adapted depending on the frontend later-language.
+      It is foreseen that default will suffice for most cases.
+
+
+---
+---
+
+Alternate plan: () is the general function call mechanism, not [ ... ]
+[ ... ] will be re-assigned to defining lists or arrays instead of [: .. :].
+most of the [abc: :abc] mechanism might be changed to abc[ ... ]
+(but we will STILL need {abc: ... :abc} for HERE-document style quoting, or for
+embedding bits of a different language, and having a guarranteed unique termination string,
+unless we go foobar{ ....  }foobar , without a space -- would rather not go that
+way, though, it is probably more convenient and intuitive to separate tokens in
+the latter case)

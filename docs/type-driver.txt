@@ -1,0 +1,25 @@
+Consider having a 'type driver' (somewhat related to the kind, but not
+exactly the same thing) or a 'type wrapper' (which might
+replace the 'drawer' / 'valbox'? Would it be part of the value,
+or of the referent?)
+
+item {
+    now.type -> contains methods. It's kind of like a Lua metatable
+    hash
+}
+
+* Potential entries for type driver:
+
+// conventional naming:
+- get <...>
+- set <...>
+
+// example for some types
+  [int.get n]      -> n
+  [int.set ...]    -> error
+
+  [array.get a idx]     -> return contents
+  [array.set a idx val] -> do it
+  [array.set a b ... val] -> delegate
+
+

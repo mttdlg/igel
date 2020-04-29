@@ -1,0 +1,20 @@
+Type Tags
+
+ID table:
+key1 | handle1
+key2 | handle2
+... [etc]
+
+Certification Entity:
+
+Takes handle, required certification.
+
+Returns whether handle is certified as requested.
+
+At first: one global certification entity?
+For later: allow different certification entities, 
+depending on whom you want to trust: for instance,
+once program has been debugged and optimized, a
+specific runtime certification for a
+time-critical section might be a NOP (optimized away)
+

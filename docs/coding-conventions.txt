@@ -1,0 +1,8 @@
+#
+# NOTE: this is a list of notes, work in progress, not guarranteed
+# to be final (or even current)
+#
+___* (three underscores at begining) is reserved for the implementation.
+__xyz__ can be python-like.
+
+Current plan: do not use __ or ___* , rely on a specific separate 'metatable' structure instead.
