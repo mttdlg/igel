@@ -9,24 +9,30 @@ scheme systems.
 
 In alphabetical order:
 
+
     Chicken:
 
         Run "examples/infile.ig" under Scheme interpreter:
             csi -bs top-chicken.scm ../examples/infile.ig
 
-        Compile Igel interpreter to executable 'chicken-igel':
+        Compile IGEL interpreter to executable 'chicken-igel':
             csc -o chicken-igel top-chicken.scm
+
+
     Gambit:
 
         Run "examples/infile.ig" under Scheme interpreter:
             gsi-script top-gambit.scm ../examples/infile.ig
 
-        Compile Igel interpreter to executable 'gambit-igel':
+        Compile IGEL interpreter to executable 'gambit-igel':
             gsc-script -o gambit-igel -exe top-gambit.scm
+
+
     Guile:
 
         Run "examples/infile.ig" under Scheme interpreter:
             guile top-guile.scm ../examples/infile.ig
+
 
     TinyScheme:
 
