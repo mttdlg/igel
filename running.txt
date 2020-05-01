@@ -33,9 +33,28 @@ In alphabetical order:
         Run "examples/infile.ig" under Scheme interpreter:
             guile top-guile.scm ../examples/infile.ig
 
+        NOTE: if a forced recompilation is needed during
+          development, it is possible to use the option
+          --fresh-auto-compile :
+
+            guile --fresh-auto-compile top-guile.scm ../examples/infile.ig
+         
+          In most cases, however, this option is not necessary.
 
     TinyScheme:
 
         Run "examples/infile.ig" under Scheme interpreter:
             tinyscheme -1 top-tinyscheme.scm ../examples/infile.ig
+
+        Please note that, at the moment, IGEL runs noticeably
+        more slowly on TinyScheme than on other targets.
+        TinyScheme is not counted as a core target for IGEL.
+        Getting IGEL to run on TinyScheme is considered only
+        an additional bonus (we assume the code has been tested
+        on a diffrent platform first), mainly as a proof of concept
+        ('can it be done?') and as a potential option for
+        bootstrapping purposes once IGEL becomes self-hosting.
+        Unless TinyScheme is the only viable option, however, one
+        should pick a different scheme interpreter/compiler to
+        run IGEL on.
 
