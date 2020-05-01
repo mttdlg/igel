@@ -1,5 +1,8 @@
 There are no reserved words A PRIORI (built into the syntax,
 before defining a language).
+Most commands will actually be CONST global variables
+(so, 'if' and 'set' are actually just regular variables,
+pre-defined as const).
 It is, however, ALLOWED for a language to reserve words!
 For instance, 'true' and 'false' could be the canonical boolean words.
 'else' or 'default' could be a reserved word:
@@ -17,6 +20,11 @@ Alternately:
         * { qux }
     }
 Aligns better. Could reserve a single asterisk (but allow asterisk-followed-by-id).
+The main effect of reserving a word is that one can never define variables
+with that name. NOTE: just declaring said variables as constants does not
+work, because we might shadow them in an inner scope (by defining a local
+variable or a parameter to a function whose name conflicts with the outer
+constant).
 
 Should we have builtins like *true and *false, which can be aliased?
 We will need to KNOW what the canonical values are, for printing...
