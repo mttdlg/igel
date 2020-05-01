@@ -23,7 +23,8 @@
 
 ;;
 ;; Provide barely enough an approximate implementation
-;; of SRFI-69 to get the rest of the code working.
+;; of the parts of SRFI-69 used in our code
+;; to get the rest of the code working.
 ;; Somehow.
 ;;
 

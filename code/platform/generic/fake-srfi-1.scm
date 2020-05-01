@@ -22,7 +22,8 @@
 ;;
 ;;
 ;; Provide barely enough an approximate implementation
-;; of SRFI-1 to get the rest of the code working.
+;; of the functions from SRFI-1 used in our code
+;; to get the rest of the code working.
 ;; Somehow.
 
 (define (drop clist i)
@@ -30,7 +31,8 @@
   ;; The case where i is negative or fractional
   ;; is going to be a problem only if clist
   ;; does not terminate (for instance, looping on
-  ;; itself). Good enough for a drop-in replacement.
+  ;; itself). Good enough for a minimalist
+  ;; makeshift replacement.
   ;;
   (cond
     ((zero? i) clist)

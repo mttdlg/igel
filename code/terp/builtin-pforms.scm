@@ -61,7 +61,7 @@
 
   ;; Semantics
   (bind-list (drawer-name type value) (parse-declaration scope (cdr nodes))
-     (now-add-drawer scope drawer-name type value)
+    (now-add-drawer scope drawer-name type value)
     none-singleton))
 ;;
 ;; Alternate experimental implementation (requires support

@@ -92,7 +92,7 @@
 ;;
 
 ;;
-;; WARNING: untested!
+;; WARNING: needs more testing!
 ;;
 
 ;;

@@ -25,7 +25,40 @@
 ;;
 
 ;;
-;; We do not care too much about higyene:
+;; Provide enough of a(n approximation of) a subset
+;; of SRFI-9 to get the rest of the code runnig. Somehow.
+;; The code will not be fully SRFI-9 compliant, and usage
+;; that would expose the non-compliant parts shall be avoided.
+;; (example of non-compliancy: we implement records as
+;; vectors, and the procedure 'vector?' will return #t
+;; when passed a record created with this implementation,
+;; which violates the SRFI-9 specification. In our code,
+;; therefore, we have to be aware of this and use precautions
+;; if we want to support this approximation).
+;;
+;; NOTE: a possible approach to resolve the situation mentioned
+;; above: 
+;; * store a special 'gensym' symbol into index 0 of the vector
+;;   instead of the symbol '_fake-9_
+;;
+;;     (define fake9-marker (gensym))
+;;
+;; * store the value of 'vector?' (procedure) as 'fake9-old-vector?'
+;;
+;;     (define fake9-old-vector? vector?)
+;;
+;; * redefine 'vector?' as
+;;
+;;     (define (vector? x)
+;;       (if (fake9-old-vector? x)
+;;         (and (>= (vector-length x) 1)
+;;              (eq? (vector-ref x 0) fake9-marker))
+;;        #f))
+;;
+
+;;
+;; Current approach:
+;; We do not care too much about higyene;
 ;; we assume the '_fake9_' prefix will not be used
 ;; by identifiers provided by the user
 ;; (these are not general purpose libraries, 
@@ -35,7 +68,10 @@
 ;;
 ;; In particular, we do not go out of our way to check consistency
 ;; (at first, we won't check consistency between the constructor
-;; and the field specs, for instance)
+;; and the field specs, for instance).
+;; We assume that the code has already been tested under some other
+;; Scheme system which provides full SRFI-9 support, and we just want
+;; to get the already tested code to somehow run under TinyScheme.
 ;;
 
 (define (_fake9_make-vector-init vector-symbol constructor-args)
