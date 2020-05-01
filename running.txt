@@ -1,5 +1,5 @@
-HOW TO COMPILE/RUN THE SCHEME INTERPRETER FOR IGEL
-==================================================
+HOW TO COMPILE/RUN THE IGEL INTERPRETER
+=======================================
 
 The following instructions assume that the current
 working directory is 'code/'
