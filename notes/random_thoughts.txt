@@ -30,13 +30,9 @@ macro vector {String name; Int range-max; Int range-min} {
 }
 
 ---
-Original plan:
-{   -> [[
-{`: -> [` [
-}   -> ]]
-Now {} will mark a BLOCK, a separate construct.
-The AST node's value /is/ a list of nodes, each node being a list of node itself, but {} and [[]] are NOT exchangeable!
-{} is an AST token of type BLOCK, [ ... ] is an AST node of type... uh... LIST? SQUARE-LIST? Gotta decide exact name.
+{} will mark a BLOCK, a separate construct from a SQUARE BRACKET LIST (now used for function invocation). The original plan was to sort of muddle the distinction between the two.
+The {} (BLOCK) AST node's value /is/ a list of (nodes containing?) lists of nodes, but {} and [[...] [...] ... ] are NOT interchangeable!
+{} is an AST token of type BLOCK, [ ... ] is an AST node of a different type.
 
 {quasiquote:
     print ,foo

@@ -1,11 +1,11 @@
 # Concept question:
-# what about something which /might/ work like an int,
-# but requires runtime checks? (Like, for instance, TCL-like strings?)
+# what about a type which /might/ work like an int,
+# but requires runtime checks? (Like scalars in Perl, or TCL's string/int dynamic typing?)
 # Current hypothesis: probaly allow, provided runtime checks /are/ run before
 # /usage/. Issue with exceptions?
 # Add special type :no-runtime-checks for when /strict/
 # behaviour is allowed?
-var strinteger [:string :int]
+var strinteger [:string :int] # NOTE: Old planned syntax, current code no longer uses this
 
 #
 #
@@ -39,7 +39,7 @@ if <a> {
     ....
 }
 
-same semantics:
+same semantics, but more readable:
 
 cond {
     <a> { ... }
@@ -48,7 +48,9 @@ cond {
     default { .... }
 }
 
-This is more readable
+(see Scheme's 'cond')
+
+We also have the classic 'switch/case'
 
 switch <value> {
     <x> { ... } # Possibly accept ranges.
@@ -57,7 +59,7 @@ switch <value> {
     default { .... }
 }
 
-in a sense, 'cond' works like a 'switch' where 'value' is true.
+In a sense, 'cond' works like a 'switch' where 'value' is true.
 NOTE: one will probably not implement it that way for efficiency reasons.
 It might be possible to implement switch as a macro which uses cond, though,
 unless one needs to optimize the table for performance, or to map the construct

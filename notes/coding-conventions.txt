@@ -5,4 +5,5 @@
 ___* (three underscores at begining) is reserved for the implementation.
 __xyz__ can be python-like.
 
-Current plan: do not use __ or ___* , rely on a specific separate 'metatable' structure instead.
+Current plan: do not use __xyz__, rely on a specific separate 'metatable' structure instead.
+___* might still be used, but might end up not being necessary.

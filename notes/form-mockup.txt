@@ -1,0 +1,36 @@
+form later.while-with-timeout {
+
+    e: [expression: bool]
+    b: block
+    max_iter [expression: int]
+
+} {
+    now {
+        var cnt-id [gensym] # Counter var name
+    }
+    later {
+        var [now.cnt-id] [now.max_iter]
+        while ( [now.e] and ( [now.cnt-id] > 0 )) {
+            do   [now.b]      # or perhaps just [now.b]
+            decr [now.cnt-id] # decrement
+        }
+    }
+}
+
+const while-with-timeout = later.while-with-tiemout # Type inference
+
+#
+# End of example
+#
+
+#
+# Local variables, Scheme-let style?
+# Hm, not sure about this. Maybe not.
+#
+vars {
+    a = b
+    c = d
+    e = f
+} {
+    ...
+}
