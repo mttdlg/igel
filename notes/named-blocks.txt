@@ -52,9 +52,20 @@ set x {:string-with-weird-quotes:
 It would behave similarly to Python's r'...' string.
 Could be used for regexps:
 
-set r {:regexp: # There is nothing special about 'regexp', it could
-                # be anything else like 'foobar', provided that the
-                # block is ended with the SAME ID.
+import regexp
+
+const r = {:regex:  # There is nothing special about 'regex', it could
+                    # be anything else like 'foobar', or even 'regexp',
+                    # which is an existing identifier (we just imported
+                    # a module with that name), provided that the block
+                    # is ended with a closing :<ID>:} notation using the
+                    # SAME :<ID>: as the opening brace.
+                    # To reiterate: the <ID> between colons is not looked up,
+                    # it is merely string-matched to find the corresponding
+                    # closing named-brace.
+                    
+                    # NOTE: we will produce a string constant, so
+                    # we will infer the type of 'r' as 'string'.
 
     ^           # match at beginning
         \s*     # zero or more whitespace characters
@@ -69,6 +80,10 @@ set r {:regexp: # There is nothing special about 'regexp', it could
         !       # literal exclamation mark
         \s*     # zero or more whitespace characters
     $           # match at end
-:regexp}
-set re [regexp.compile -verbose r]
+:regex:}
+
+set re [regexp.compile -verbose r] # in this case, 'regexp' is the name of a
+                                   # module. It has nothing to do with the
+                                   # ID used earlier. There is no conflict
+                                   # between the two.
 
