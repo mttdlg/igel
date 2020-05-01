@@ -1,15 +1,45 @@
-now.Int
+now.int
 
-now.String 
+now.string 
 
-now.Syms ....
-    now.Bool = [now.Syms [: 'TRUE 'FALSE :] ]
+now.symbols ....
 
-now.Struct {
-    a: Foo = 1 
-    b: Bar = "2"
-    c: Baz = 'THREE
+    now.bool = [now.symbols [: 'TRUE 'FALSE :] ]
+
+    # order is relevant, can be cast to an integral value:
+    enum      now.bool { TRUE 'FALSE } # each member can be
+                                       # either ID (for ease
+                                       # of typing, automatically
+                                       # converted to symbol) or
+                                       # symbol (for consistency)
+                                       # If it is an ID, it is
+                                       # automatically converted
+                                       # to symbol
+
+    # order is irrelevant, cannot be cast:
+    symset    now.bool { TRUE FALSE }
+
+    # Defines symbols and associates them with specific numbers.
+    # (or strings, or...
+    symtable  : uint { 
+        FALSE = 0
+        TRUE  = 1
+    }
+
+struct mystruct {
+    a: int    = 1 
+    b: string = "two"
+    c: myenum = 'THREE
 }
+
+#
+# There should, whenever possible, be a way to provide
+# a literal value even for a compound data structure.
+#
+
+var x: mystruct = { a = 2; b = "three"; c = 'FOUR }
+
+print [mystruct { a = 2; b = "three"; c = 'FOUR }]
 
 #
 # Note: what you are interested in is probably some form
