@@ -51,7 +51,7 @@ later {
     }
 
     proc _.if_then_else {
-            cond : [exp bool]
+            cond : [expr bool]
             then_block : block
             else_block: block
     } {

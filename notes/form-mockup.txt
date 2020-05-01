@@ -1,8 +1,8 @@
 form later.while-with-timeout {
 
-    e: [expression: bool]
+    e: [expr: bool]
     b: block
-    max_iter [expression: int]
+    max_iter [expr: int]
 
 } {
     now {

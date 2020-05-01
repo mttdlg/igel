@@ -8,11 +8,11 @@ a later-exception happens at run time.
 # 1)
 try {
   ...
-} catch foo {
+} catch FooException {
   ...
-} catch bar {
+} catch BarException {
   ...
-} catch baz {
+} catch BazException {
   ...
 } else {
   ...
@@ -26,10 +26,10 @@ try {
             # Blocks should NOT produce a result by themselves, so we can
             # distinguish them syntactically/semantically from expressions.
             # If we want a result, we do something like [eval { ... }]
-    foo: { ... }
-    bar: { ... }
-    baz: { ... }
-    default: { ... } # All other exceptions (but an exception must have taken place)
+    FooException { ... }
+    BarException { ... }
+    BazException { ... }
+    default { ... } # All other exceptions (but an exception must have taken place)
 } else {
   ... # No exception has taken place.
 }
@@ -65,5 +65,13 @@ a basic example of the general idea:
 What needs to be defined is the exact mechanism for associating a note to
 a line/block in a way that is accurate, uses (if possible) existing syntax,
 but is minimally invasive and does not require awkward rewrites.
-Current plan is to use pipe as a special syntax.
+Current plan is to use pipe as a special syntax. Maybe ^ because it
+kind of looks like a footnote? Or '!' as a special named block macro?
+
+
+    close f | fileclose
+    close f ^ fileclose
+    close f !(fileclose)
+    close f ![fileclose]
+    close f [:!: fileclose :!:]
 

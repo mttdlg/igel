@@ -1,8 +1,8 @@
 lval:
     Assignable at now-time.
-expression:
+expr(ession):
     Expression, possibly specifying a result type in form signatures.
-    [expression: int]
+    [expr: int]
 block:
     What it says on the tin. Makes sense only at now-time, unless special
     modules are imported.
