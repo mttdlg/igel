@@ -37,53 +37,89 @@ Another possibility:
 'named blocks' are just fancy ways to define strings, we do not have
 to register the ID in advance, we just make one up on the spot.
 We look for a corresponding closing ID.
-set x {:string-with-weird-quotes:
-"
-""
-"""
-""""
-"""""
-""""
-"""
-""
-"
-:string-with-weird-quotes:}
+
+    set x {:string-with-weird-quotes:
+    "
+    ""
+    """
+    """"
+    """""
+    """"
+    """
+    ""
+    "
+    :string-with-weird-quotes:}
 
 It would behave similarly to Python's r'...' string.
 Could be used for regexps:
 
-import regexp
+    import regexp
 
-const r = {:regex:  # There is nothing special about 'regex', it could
-                    # be anything else like 'foobar', or even 'regexp',
-                    # which is an existing identifier (we just imported
-                    # a module with that name), provided that the block
-                    # is ended with a closing :<ID>:} notation using the
-                    # SAME :<ID>: as the opening brace.
-                    # To reiterate: the <ID> between colons is not looked up,
-                    # it is merely string-matched to find the corresponding
-                    # closing named-brace.
-                    
-                    # NOTE: we will produce a string constant, so
-                    # we will infer the type of 'r' as 'string'.
+    const r = {:regex:  # There is nothing special about 'regex', it could
+                        # be anything else like 'foobar', or even 'regexp',
+                        # which is an existing identifier (we just imported
+                        # a module with that name), provided that the block
+                        # is ended with a closing :<ID>:} notation using the
+                        # SAME :<ID>: as the opening brace.
+                        # To reiterate: the <ID> between colons is not
+                        # resolved according to any rule/table, it is
+                        # merely string-matched to find the corresponding
+                        # closing named-brace.
+                        
+                        # NOTE: we will produce a string constant, so
+                        # we will infer the type of 'r' as 'string'.
 
-    ^           # match at beginning
-        \s*     # zero or more whitespace characters
-        [Hh]    # either "H" or "h"
-        ello    # literal string "ello"
-        \s*     # zero or more whitespace characters
-        ,       # literal comma
-        \s*     # zero or more whitespace characters
-        [Ww]    # either "W" or "w"
-        orld    # literal string "orld"
-        \s*     # zero or more whitespace characters
-        !       # literal exclamation mark
-        \s*     # zero or more whitespace characters
-    $           # match at end
-:regex:}
+        ^           # match at beginning
+            \s*     # zero or more whitespace characters
+            [Hh]    # either "H" or "h"
+            ello    # literal string "ello"
+            \s*     # zero or more whitespace characters
+            ,       # literal comma
+            \s*     # zero or more whitespace characters
+            [Ww]    # either "W" or "w"
+            orld    # literal string "orld"
+            \s*     # zero or more whitespace characters
+            !       # literal exclamation mark
+            \s*     # zero or more whitespace characters
+        $           # match at end
+    :regex:}
 
-set re [regexp.compile -verbose r] # in this case, 'regexp' is the name of a
-                                   # module. It has nothing to do with the
-                                   # ID used earlier. There is no conflict
-                                   # between the two.
+    set re [regexp.compile -verbose r] # in this case, 'regexp' is the name of a
+                                       # module. It has nothing to do with the
+                                       # ID used earlier. There is no conflict
+                                       # between the two.
 
+Possibility: {: .. :} for multiline matching (disallows quoted content on the same line on which brace is), [: ... :] for possibly-single-line matching (includes line where bracket is).
+
+    set hw_multiline = {:hw: Hello, world! :hw} # Not allowed
+
+    set hw_multiline = {:hw:
+        Hello, world!
+    :} 
+    # hw_multiline is "    Hello, world!"
+
+
+    set hw = [:hw: Hello, world! :hw] # hw is " Hello, world! "
+    set hw = [:hw:
+        Hello, world!
+    :hw:]
+    # hw is "\n    Hello, world!\n"
+
+    Consider whether or not to discard indentation. Allow it as an option?
+    
+    if condition {
+        set hw_noindent = no-indent{:hw: # No space before the curly brace
+        Hello, world!
+        :hw:}
+    }
+    # hw_noindent is "Hello, world!"
+
+Alternate approach: everything on the same line after "{:<id>:" is options.
+End-of-line backslash is allowed on this line, to continue into the next.
+    if condition {
+        set hw_noindent = {:hw: -no-indent \
+                                -example-option
+        Hello, world!
+        :hw:}
+    }
+    # hw_noindent is "Hello, world!"

@@ -40,7 +40,9 @@ proc pronoun {n: Int} : String {
 }
 
 proc mainBottles {max_n: Int} {
-    # state n [Bit 4 0] reset: 0
+    # state n [Mvl 4 0] -reset "00000"
+    # state n [Mvl 4 0] -reset 0
+    # state n [Mvl 4 0] -reset "XXXXX"
     var n: Int = max_n
     while [ge n 0] {
         write [bottlesString n true]  " of beer on the wall, "

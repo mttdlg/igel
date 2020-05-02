@@ -6,6 +6,15 @@ proc nToMaybeWords {n: Int} : String {
     if [eq n 0] { return "no more" }
     if [eq n 1] { return "one" }
     return [cat n]  # [cat n] : Trick to convert number -> string
+                    # Normally, 'cat' (whose name was inspired by
+                    # the corresponding shell command), returns a
+                    # string obtained by conCATenating the string
+                    # representations of its arguments, no matter
+                    # what the arguments' types are.
+                    #
+                    # According to this rule, if only one
+                    # argument is provided, cat returns its
+                    # string representation.
 }
 
 proc nToCapitalMaybeWords {n: Int} : String {
