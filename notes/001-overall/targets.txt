@@ -1,0 +1,66 @@
+Most common languages a HW designer or verificator encounters in
+their career will fall into one or more of the following classes:
+
+* Dynamic languages, usually bytecode compiled or intepreted, and executed immediately (Perl, Python, TCL, etc.)
+    + good for rapid prototipying, testing, and development cycle
+    - no *explicit* support for compilation (to silicon in particular)
+
+* Statically compiled languages (C, C++, behavioural Verilog HDL or VHDL, etc.)
+    + good performance for use on a general-purpose computer
+    - slower development cycle
+    - for HW-related tools (Verilog/SystemVerilog, VHDL, Specman/e) toolchain might be large and bulky.
+    
+* HDL languages for hardware synthesis (RTL subset of Verilog HDL, VHDL)
+    + can target silicon
+    - require the use of specific patterns of superset language instead of
+      providing explicit patterns (for instance, for defining a finite state
+      machine there is no specific construct -- synthesis relies on analysis
+      of coding patterns in the more general-purpose behavioural version of
+      the language).
+
+      But what about satisfying all three?
+
+One of the various goals for IGEL is defining a language which is designed
+from the ground up to be able to target all of the following:
+
+    * Quick turnaround flow, possibly based on bytecode
+
+    * Translation to a different target language of choice
+
+    * Compilation to high-performance assembly. Plan: re-use the previous
+        point where we can translate into a high-level language like C or
+        C++ as an intermediate step. This way we then reuse state-of-the-art
+        compilers for the actual compilation and optimization.
+
+    * Support hardware simulation and verification.
+        -> Possibly support controlling a simulator/waveform viewer.
+            If one thinks about it, by using the appropriate coding
+            patterns, a UVM monitor could theoretically be re-used
+            as a component for a system which provides high-level
+            data visualization (visualizing bus transactions,
+            network packets, or bitmap images instead of raw
+            waveforms, for instance).
+            
+    * Hardware synthesis of a subset of the language designed specifically
+      for hardware synthesis and providing appropriate programming patterns
+      (like finite state machines) as explicit constructs, possibly using
+      translation to a language like Verilog or VHDL as an intermediate step.
+        -> since this is will be a *subset* of the language (+ libraries specific
+           to HW synthesis), all the above targets, from bytecode to translation
+           to C/C++ to native compilation, are still available to the subset as a
+           special case.
+            -> C++ compilation of RTL code could target SystemC specifically, for
+               better reuse and integration with simulators and EDA tools.
+        -> RTL library will provide commonly used RTL patterns like delayed
+           assignment ( <= : signal assignment in VHDL, non-blocking assignment
+           in Verilog ), FSMs, combinational logic, synchronous blocks, etc.
+
+    * Long term goal, uncertain whether it will be achievable but it will be
+      the subject of analysis: hardware/software co-targeting, where some
+      operations from the RTL subset will be synthesized as hardware and
+      other behavioral operations like dynamically allocated data structures
+      (not easily synthesized) will rely on memories and possibly
+      special-purpose hardware or a small embedded microcontroller system.
+        -> automatic discrimination will be attempted, but the user will be
+           allowed fine-grained control on what will be synthesized as hardware
+           and what will be implemented in software.

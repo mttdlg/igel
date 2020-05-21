@@ -1,0 +1,31 @@
+Defininig the guidelines of the language.
+
+Main guideline:
+
+"The programmer should not do work to make the compiler happy,
+ the compiler should do work to make the programmer happy."
+
+Other guidelines:
+
+Reuse of approaches to language constructs is a big driver of IGEL development.
+
+Acceptable reasons to take an original approach to constructs or semantics:
+* It is the only way to achieve the goals.
+* You are convinced the original approach increases the language's power without introducing issues, surprises, or confusion.
+* Existing solutions are unsatisfactory, and you are honestly researching whether or not there is a better way to do things.
+* Exploring a possible approach that you are not sure whether it's actually good or not.
+* Trying to learn about a subject: this might involve attempting a doomed strategy, failing, and learning from the failure.
+* Giving an unfamiliar approach (accepted because of one of the reasons above) a more familiar appearance.
+
+Bad reasons to take an original approach to things:
+* Just to be different
+    `-> unless there is a good reason(*), one should go with an approach already familiar to the majority of developers. Avoid unnecessary surprises.
+
+(*) Since this is a personal project at the moment, 'personal taste' might occasionally be counted as a 'good reason', at least for now.
+    This should happen only occasionally, not too often.
+
+# Take heavy inspiration from The Zen of Python 
+Safe should be default.
+Fast should be possible.
+When in doubt, fail.
+When you fail, fail spectacularly.

@@ -1,0 +1,25 @@
+One important concept of the now-language (compiler-controlling language)
+is that lvalues for the 'later' (target) language can be 'locked'.
+Once an lvalue has been locked, it can no longer be unlocked.
+This allows the compiler to:
+1) optimize away run-time (later) lookups to the locked item
+2) protect against accidental overwriting of a built-in or already
+   defined identifier.
+
+It needs to be established what happens with shadowing (i.e., binding
+local variables).
+
+Since IGEL's default and recommended behaviour would be to use lexical
+scoping, accidental overriding of identifiers should not be much of
+an issue. In fact, allowing /shadowing/ of reserved words under very
+controlled conditions might actually enhance the power of the language
+without too many drawbacks. If this permission turns out to be risky,
+we could foresee the concept of 'reserving' an identifier, which means
+it will not be possible to shadow said identifier with a local variable
+(at least, not in the part of the program /after/ reserving the
+identifier).
+
+Since 'reserving' works at the identifier level and locking works at the
+lvalue level (the data structure called 'drawer' at the moment), the
+two approaches are complementary.
+

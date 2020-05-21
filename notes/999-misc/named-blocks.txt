@@ -84,10 +84,7 @@ Could be used for regexps:
         $           # match at end
     :regex:}
 
-    set re [regexp.compile -verbose r] # in this case, 'regexp' is the name of a
-                                       # module. It has nothing to do with the
-                                       # ID used earlier. There is no conflict
-                                       # between the two.
+    set re [regexp.compile -verbose r]
 
 Possibility: {: .. :} for multiline matching (disallows quoted content on the same line on which brace is), [: ... :] for possibly-single-line matching (includes line where bracket is).
 

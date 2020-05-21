@@ -1,0 +1,77 @@
+TCL (thus, indirectly, *nix shells) and Python have been the major
+influences on the syntax of IGEL. LISP/Scheme have played a part
+in affecting decisions in the background, but their influence
+shouldn't show too much if one just looks at a random snippet of code.
+
+Major influences on the kind of operations the syntax should allow (even
+if the implementation takes a different approach to reach the same goal):
+TCL, LISP, Forth, *nix shells, C/C++, and e.
+
+Goals for the syntax
+====================
+
+One of the core goals of IGEL's syntax is to achieve something which is possible
+in languages like LISP, Forth, TCL, *nix shells, and e (the e Hardware Verification
+Language -- see IEEE-1647), but not in most mainstream programming languages:
+allowing the definition of arbitrary language constructs (for instance, flow
+control structures), not just functions.
+
+The approaches used for achieving this goal in the aforementioned languages
+include:
+
+* Provide a way to transform a new syntax into an existing syntax (LISP, e)
+* Allow access to the internals of the system (Forth)
+* Something in between (TCL).
+
+LISP and Forth have a very regular, but non-mainstream syntax.
+
+LISP's construct definition is based on macros (the way LISP defines macros,
+not the way the C preprocessor does) which manipulate S-Expressions. 
+
+Forth does not transform the stream of instructions, but relies on the
+chained nature of the syntax and the possibility to tag words to be
+executed as soon as they are encountered (as opposed to the default
+behaviour of compiling them for later execution) in order to perform
+low-level operations at the correct moment (compile time or run time).
+
+TCL and *nix Shells present the appearance of a more mainstream syntax, but
+allow a degree of manipulation on arguments.
+
+e (The e Hardware Verification Language) relies on expression interpolation
+within a template string (normal macros) or string manipulation (macros
+"as computed").
+
+The approach we are going with will take inspiration from all of the above:
+
+* Like LISP, but unlike e's "macros as computed", IGEL will try to operate
+  at the level of the abstract syntax tree, not at a lower level (example
+  of the lower level we try to avoid: e's macros "as computed", which rely
+  on string manipulation).
+
+* Like in LISP, special 'forms' will be used to manipulate syntax instead of
+  functions/procedures of the target language (later-language). Note, however, the
+  following point:
+
+* Due to the architecture of IGEL (there are two similar, but conceptually separated
+  languages: the compile-time 'now language' and the target 'later language'),
+  forms/macros are functions in the now-language which manipulate AST objects
+  (which are normally not available at runtime).
+
+* We will provide fill-in-the-blank templates as one of the possible ways to transform
+  syntax (similar to e's plain macros) but, as said in an earlier point, not string
+  manipulation (like e's "macros as computed"), preferring instead manipulation at the
+  AST abstraction level. This will be provided as convenience for simple cases, but will
+  not be the most general construct.
+
+Look and feel
+=============
+
+We aim for the look and feel of an inoffensive, mainstream language: reassuring and
+familiar at a first glance. The power of syntax-transforming will be hidden under
+the hood and will not be a required paradigm of the language (unlike Forth, where
+defining a language fitting your problem is the main paradigm). Extending the language
+will be available, but considered an 'advanced feature' (like it is in e).
+
+The current goal for the look-and-feel of IGEL is that of a language which cannot make
+up its mind on whether it wants to be TCL or Python.
+
