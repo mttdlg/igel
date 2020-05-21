@@ -73,5 +73,5 @@ defining a language fitting your problem is the main paradigm). Extending the la
 will be available, but considered an 'advanced feature' (like it is in e).
 
 The current goal for the look-and-feel of IGEL is that of a language which cannot make
-up its mind on whether it wants to be TCL or Python.
+up its mind on whether it wants to look like TCL or Python.
 
