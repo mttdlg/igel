@@ -1,3 +1,9 @@
+#
+# Note: this is a very old mockup.
+# Should check how much of the following is
+# still valid after the evolution the concept has
+# gone through.
+#
 form later.while-with-timeout {
 
     e: [expr: bool]

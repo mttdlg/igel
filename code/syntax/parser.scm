@@ -20,79 +20,30 @@
 ;;
 
 ;;
-;; Process:
-;;
-;; command   item1 item2 item3
-;;
-;; First of all, 'command' will be collected.
-;;
-;; command   item1 item2 item3
-;;         ^
-;;
-;; It will most likely be a dottable (we'll probably support only dottables
-;; at the beginning, we might look into accepting more syntactic kinds later)
-;;
-;;
 ;; Parsing proceeds like this:
 ;;
 ;; top-level statements are /always/ parsed into a list of AST nodes according to
-;; existing rules, and then now-evaluated.
+;; existing rules, and *then* now-evaluated. Early drafts considered an extensible
+;; parser (Forth-style, where the now-language would get a chance to get at the
+;; character stream).
 ;;
-;; A top-level statement, can, however, introduce a new parsing rule which uses
-;; custom syntax *FOR A NODE* (but not for a command). for instance,
+;; To parse custom sytax (for instance, assembly) the parser will return a STRING,
+;; and then now-language will get a go at procducing AST objects from the string.
 ;;
-;;  {template-fulline: $
+;; {:asm:
+;;          mov r1, 10
+;;      loop:
+;;          bz  r1, end
+;;          sub r1, 1
+;;          jp loop
+;;      end:
+;;          ret
+;; :asm:}
 ;;
-;;          Hello, ${name}
-;;
-;;  :template-fulline}
-;;
-;; Starting from the next line, this becomes an 'existing rule'.
-;; 
-;;
-;; We resolve the command using the /now-table/, and if it is a form, it gets
-;; a go at trying to translate the rest of the stream (even if it isn't it still
-;; does, because we provide a default parser object which does what is expected
-;; from function calls: we parse each item according to standard rules until
-;; the end of the line)
-;;
-;; How do we parse blocks? All at once? Almost certainly: we need the whole block
-;; for control constructs like 'if' and 'while', and part of the syntax might be
-;; custom (inline assembly, for instance).
-;;
-;; We might provide a hook which automatically skips whitespace
-;; for convenience:
-;;
-;; command   item1 item2 item3
-;;           ^
-;;
-;; If we process item1 with the default logic, there will be
-;; the possibility of hooking into the parser (for instance, using
-;; the special constructs {<id>:  :<id>} ).
-;;
-;; Sub-expressions and sub-commands are called by hooks in the parser.
-;; They must return a syntax-item object (it's called ast-node now,
-;; planning to rename it at the moment). They must leave the cursor
-;; just /after/ the text of their competence.
-;;
-;; It might probably make sense to store a location along with the
-;; syntax-object/ast node.
-;;
-;; foo {python:
-;;      from greet import world
-;;      print "Hello,", world, "!"
-;; :python}
-;;
-;; The above syntax could be translated as:
-;;
-;; * a string.
-;; * a block:
-;; {
-;;    python.import-from greet world
-;;    python.print "Hello," world "!"
-;; }
-;;
-;; Semantics will decide how it is going to be translated.
+;; The whole block will be parsed as a string, and returned as such.
+;; It will be then be possible to write a parser for the string in the
+;; now-language. The /character stream/ itself, though, has not been
+;; exposed, manipulation is performed at the AST level.
 ;;
 
 ;;
@@ -134,35 +85,6 @@
 
 ;; ID-chain resolution and support routines
 ;;
-
-;;
-;; TODO: How to handle colon?
-;;
-;; a.b.[c.d e f].g:thing.Type:foo
-;;
-;; I'd say 'do not handle it like this'.
-;; In fact, do not have colon at all.
-;; Use 'as' operator for the most general case
-;;
-;; [as thing.Type a.b.[c.d e f].g]
-;;
-;; Colon should be allowed only for CONSTANTS.
-;; * It has higher precedence than dot (a.b.c:d.e -> [dot a b [colon c d] e])
-;; * Only used to create typed constants
-;;
-;;  "3'b0XX":[Mvl 2 0]
-;;
-;;  [as [Mvl 2 0] "3'b0XX"]
-;;
-;; Alternately:
-;;
-;; a.b.[c.d e f].g:[val thing.Type]:[val foo.OtherType]
-;;
-;; Colon is part of 'dottable, it binds with everything on the right.
-;;
-;; [colon [colon [dot a b [[dot c d] e f] g] [val thing.Type]] [val foo.OtherType]]
-;;
-
 
 ;;
 ;; @private
