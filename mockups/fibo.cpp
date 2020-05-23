@@ -34,7 +34,7 @@ fibo 0 1
 
 #include <iostream>
 
-void fibo(int a = 1, int b = 1) {
+void fibo(int a = 0, int b = 1) {
     int c = a + b;
 
     std::cout << IGEL::hex(a) << std::endl;

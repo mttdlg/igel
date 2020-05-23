@@ -13,3 +13,5 @@ Maybe one day it will grow into a complete interpreter or even a compiler.
 The core is still incomplete: error handling is partial, the type system is mostly placeholder code.
 
 Due to the "scrapbook" nature of development, where ideas are jotted down as they come, many comments might be obsolete, and there might be internal contradictions between comments. Many comments were jotted down as a possible approach, but not all of them are viable (some of them have even been obsoleted by the actual implementation).
+
+That said, the examples in the 'examples' directory can be executed by the current version of the interpreter.
