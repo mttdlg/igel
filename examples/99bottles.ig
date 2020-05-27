@@ -1,8 +1,8 @@
 #!/usr/bin/env igel
 
-const startingBottles: Int 99;
+const startingBottles: int 99;
 
-proc nToMaybeWords {n: Int} : String {
+proc nToMaybeWords {n: int} : string {
     if [eq n 0] { return "no more" }
     if [eq n 1] { return "one" }
     return [cat n]  # [cat n] : Trick to convert number -> string
@@ -17,14 +17,14 @@ proc nToMaybeWords {n: Int} : String {
                     # string representation.
 }
 
-proc nToCapitalMaybeWords {n: Int} : String {
+proc nToCapitalMaybeWords {n: int} : string {
     if [eq n 0] { return "No more" }
     if [eq n 1] { return "One" }
     return [cat n]  # [cat n] : Trick to convert number -> string
 }
 
-proc bottlesString {n: Int; capitalize } : String {
-    var s: String
+proc bottlesString {n: int; capitalize } : string {
+    var s: string
 
     if capitalize {
         set s [nToCapitalMaybeWords n]
@@ -38,18 +38,18 @@ proc bottlesString {n: Int; capitalize } : String {
     return s
 }
 
-proc pronoun {n: Int} : String {
+proc pronoun {n: int} : string {
     if [eq n 1] { return "it" }
     return "one"
 }
 
-proc mainBottles {max_n: Int} {
-    var n: Int = max_n
+proc mainBottles {max_n: int} {
+    var n: int = max_n
     while [ge n 0] {
         write [bottlesString n true]  " of beer on the wall, "
         print [bottlesString n false] " of beer."
 
-        var n1: Int = [sub n 1]
+        var n1: int = [sub n 1]
         if [ge n1 0] {
             write "Take " [pronoun n] " down, pass it around, "
             print [bottlesString n1 false] " of beer on the wall!"

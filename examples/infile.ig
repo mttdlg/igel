@@ -14,7 +14,7 @@ proc greet-world {} {
 }
 
 print "Defining with args..."
-proc greet {target: String ""} {
+proc greet {target: string ""} {
     write "Hello, " target
     print "!"
 }
@@ -34,7 +34,7 @@ print "Testing a variable"
 
 write "Two statements..." ; print "...on the same line."
 
-var n: Int 0
+var n: int 0
 print n
 
 set n 1
@@ -49,12 +49,12 @@ print n
 print "Testing constants:"
 
 write "Expect 1 ... -> "
-const c: Int 1
+const c: int 1
 print c
 # set c 1
 
 write "Expect \"Thing\" (without quotes) ... -> "
-const thg: String "Thing"
+const thg: string "Thing"
 print thg
 
 print "Testing functions:"
@@ -69,9 +69,9 @@ print [lt 2 1]
 
 print "Testing loop:"
 
-var i: Int 0
-const iterations: Int = 10
-const halfway: Int [idiv iterations 2]
+var i: int 0
+const iterations: int = 10
+const halfway: int [idiv iterations 2]
 
 while [lt i iterations] {
     if [eq i 0] {
@@ -93,7 +93,7 @@ while [lt i iterations] {
 }
 
 print "Loop has completed."
-var msg: String = [cat "The final value" " of the variable 'i' is " i ". Nifty, huh?"] 
+var msg: string = [cat "The final value" " of the variable 'i' is " i ". Nifty, huh?"] 
 print msg
 print
 
@@ -132,7 +132,7 @@ print
 
 print "Testing delegation of setter:"
 print [set [dot delegator "Hello" "world" 1 2 3] x]
-var result_of_set: String [set delegator.two "Hello"]
+var result_of_set: string [set delegator.two "Hello"]
 print result_of_set
 print
 

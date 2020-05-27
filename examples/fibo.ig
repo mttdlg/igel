@@ -45,8 +45,8 @@
 # }
 #
 
-proc fibo {a: Int = 0 ; b: Int = 1} {
-    var c: Int = [add a b]
+proc fibo {a: int = 0 ; b: int = 1} {
+    var c: int = [add a b]
 
     print [hex a]
     print [hex b]

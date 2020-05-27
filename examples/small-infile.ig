@@ -1,6 +1,6 @@
 #!/usr/bin/env igel
 
-var i: Int 0
+var i: int 0
 # set i 0
 while [lt i 10] {
     print "\"i\" is " i

@@ -84,7 +84,7 @@
   (assert (type-Int? val))
   val)
 (define type-Int
-  (make-type "Int" make-type-Int type-Int?))
+  (make-type "int" make-type-Int type-Int?))
 
 ;;
 ;; Uint
@@ -103,7 +103,7 @@
   (assert (type-String? val))
   val)
 (define type-String
-  (make-type "String" make-type-String type-String?))
+  (make-type "string" make-type-String type-String?))
 
 ;;
 ;; Support values/functions to facilitate refactoring
