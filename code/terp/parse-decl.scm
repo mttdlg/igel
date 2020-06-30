@@ -19,65 +19,68 @@
 ;;  along with IGEL.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 
-;;
-;; This file deals with parsing declarations
-;; of the type:
-;;
-;; a : int 5
-;;
-;; Some interpretation support will be provided.
-;;
-;; Should a full declaration syntax be allowed in assignments?
-;;
-;; set <declaration>
-;;
-;; set a : int = 5
-;;
-;; Probably not in /set/ itself, but the concept should be allowed.
-;; For instance, in loops:
-;;
-;; for var i : int = 1 to 10
-;; for var z = 1 to 10
-;;
-;; ( you add an 'each' to distinguish it form the case with operators: "for each i in ..." for iterators) 
-;;
-;; ...hmm.
-;;
-;; Nah.
-;;
-;; for i : int from 1 to 10
-;; for i in [range 1 to 10] # range, closed
-;; for i in [range 0 count 10] # range, open
-;; Syntactic sugar? Optional type specification?
-;;   for i from 1 to 10
-;;   for i from 10 down to 1
-;;   for i from 10 downto 1
+;
+; This file deals with parsing declarations
+; expressed in one of these formats:
+;
+; a : int = 5
+; a : int 5
+; a int = 5
+; a int 5
+;
+; Question: Should a full declaration syntax (type included) be allowed in assignments?
+;
+; set <declaration-like-syntax>
+;
+; set a : int = 5
+;
+; Probably not in /set/ itself, but the concept should be allowed elsewhere.
+; For instance, in loops:
+;
+; for var i : int = 1 to 10
+; for var z = 1 to 10
+;
+; ( you add an 'each' to distinguish it form the case with operators: "for each i in ..." for iterators) 
+;
+; ...hmm.
+;
+; Nah.
+;
+; for i from 1 to 10 { #  type is inferred from extremities of range
+; for i : int from 1 to 10 { # type is explicitly given
+; for i : int in [range 1 to 10] # range, closed. Explicit typing.
+; for i in [range 1 to 10] # range, closed. Type inferred.
+; for i in [range 0 count 10] # range, open
+; Syntactic sugar? Optional type specification?
+;   for i from 1 to 10
+;   for i from 10 down to 1
+;   for i from 10 downto 1
 
-;;
-;; First implementation: allow only one type.
-;;
-;; Later on, we will experiment with multiple types for the same variable.
-;; It will be implied that it is an INTERSECTION of types. Like tags.
-;; Incompatibilities will be handled only:
-;; 1) if they actually pose a problem.
-;; 2) manually by the integrator.
-;;
-;; var ostrich :bird :runner :danger = [Ostrich];
-;;
+;
+; First implementation: allow only one type.
+;
+; Later on, we will experiment with multiple types for the same variable.
+; It will be implied that it is an INTERSECTION of types. Like tags.
+; Incompatibilities will be handled only:
+; 1) if they actually pose a problem.
+; 2) manually by the integrator.
+;
+; var ostrich :bird :runner :danger = [Ostrich];
+;
 
-;;
-;; TODO: forbid scheme #t and #f as canonical boolean
-;; values within the interpreter. Use separate
-;; Igel-values as canonical true/false values.
-;; (should 'canonical true' and 'canonical false'
-;; be objects? Symbols? Both?)
-;; Will everything in igel be an object?
-;; A better way to word it: perhaps everything
-;; will /have/ an associated now.object
-;; (and /be/ an object at /compile/ time)
-;; but not everything will /be/ a later.object
-;; (and /be/ an object at /run/ time)
-;;
+;
+; TODO: forbid scheme #t and #f as canonical boolean
+; values within the interpreter. Use separate
+; Igel-values as canonical true/false values.
+; (should 'canonical true' and 'canonical false'
+; be objects? Symbols? Both?)
+; Will everything in igel be an object?
+; A better way to word it: perhaps everything
+; will /have/ an associated now.object
+; (and /be/ an object at /compile/ time)
+; but not everything will /be/ a later.object
+; (and /be/ an object at /run/ time)
+;
 
 ; TODO: implement proper logic;
 ; placeholder for now:
@@ -182,16 +185,18 @@
                                                       ;; robustness to non-local changes
                                                       ;; (i.e., we change earlier check but
                                                       ;; forget to update this line)
-                          (error-and-exit "= not followed by value")
+                          (error-and-exit "'=' in declaration not followed by value")
                           (list node-name node-type (parse-declaration-value nodes-after-equal
                                                                              node-type))))))
               (else => (lambda (kind)
-                         (error-and-exit (string-append "Invalid kind in declaration: "
+                         (error-and-exit (string-append "Invalid AST node kind in declaration: "
                                                         (symbol->string kind))))))))))))
 
-        ;;       Currently not handled: { var foo = 3 : Int }
-        ;;       We reserve the syntax '3 : Int'  to mean 3 is Int and not, say, Byte or Uint, in the future.
-        ;;       In that case, the whole sequence "3 : Int" will be parsed as a value.
+        ;;       Currently not handled: { var foo = 3 : int }
+        ;;       We reserve the syntax '3 : int'  to mean 3 is Int and not, say, byte or uint, in the future.
+        ;;       In that case, the whole sequence "3 : int" will be parsed as a value.
+        ;;       (we will have to see if this is feasible, or if it will create problems)
+        ;;       It might be simpler to write something like [int 3] instead.
 
 (define (parse-declaration scope signature) ; signature is a list of nodes.
 
