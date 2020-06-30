@@ -31,6 +31,7 @@
 
 ;;
 ;; Expects the following files to have already been loaded:
+;;
 ;; - join.scm
 ;; - any-to-string.scm
 ;; - support.scm
@@ -42,6 +43,11 @@
 ;; We want to express them relative to the current
 ;; directory.
 ;;
+
+;;
+;; Types:
+;;
+(load-ct "syntax/syntax-types.scm")
 
 ;;
 ;; Input streams:

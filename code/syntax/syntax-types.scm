@@ -1,7 +1,9 @@
 ;;
-;; Syntax-Types
+;; Syntax types
 ;;
 ;; Copyright 2020 Matteo De Luigi
+;;
+
 ;;
 ;;  This file is part of IGEL
 ;;
@@ -26,7 +28,15 @@
 ;;;;;;;;;;;;
 
 ;;
-;; Original record type, for reference:
+;; We could implement tagged unions to keep the current
+;; architecture, but represent the records as proper
+;; IGEL values.
+;;
+;; Alternately, we might make things slightly less
+;; type-safe and provide now.Any.
+;;
+;; The latter approach might be used as an intermediate
+;; step before coding a type-safe version.
 ;;
 
 (define-record-type <token>
@@ -35,6 +45,12 @@
                     (kind token-get-kind)
                     (value token-get-value)
                     (location token-get-location))
+
+;;
+;; Old code defining the same API but implementing the record
+;; as a now-object (before now.Object was overhauled -- so it
+;; might no longer work)
+;;
 
 ; (define (make-token token-kind token-value token-location)
 ;   (make-raw-now-object-from-pairs 'token `(
@@ -72,6 +88,10 @@
 ;; (file + line + column for files) so error messages
 ;; can report this information.
 ;;
+;; This should be the 'location' object taken from
+;; the first token of the node (for a block, it would
+;; be the opening curly brace).
+;;
 (define-record-type <ast-node>
                     (make-ast-node kind value)
                     ast-node?
@@ -89,28 +109,23 @@
 ;
 ; var n: Igel.AstNode 
 ;
-; n.kind     -> [dot n kind]     -> builtin, delegate to record method
-; n.value    -> [dot n value]    -> builtin, delegate to record method
-; n.location -> [dot n location] -> builtin, delegate to record method
-;
+; n.kind     -> [dot n kind]     -> builtin: accesses record, produces igel-value  
+; n.value    -> [dot n value]    -> builtin: accesses record, produces igel-value
+; n.location -> [dot n location] -> builtin: accesses record, produces igel-value
 
-; (define (make-ast-node node-kind node-value)
-;   (make-raw-now-object-from-pairs 'ast-node `(
-;         ("kind"     ,(make-now-drawer-const "NodeKind" node-kind))
-;         ("value"    ,(make-now-drawer-const "NodeVal"  node-value)))))
+
+; ;; Classes
+; (define now.ASTnode
+;   (make-now-class;; List of constant kinds, to be used later
+;; (for instance, to determine if an AST node
+;; is a constant or an expression)
+;
+;     "now.ASTnode"
+;     default-parents
+;     (make-default-meta)
+;     (make-hash-table)))
 ; 
-; (define (is-now-object-ast-node? x)
-;   ;; We do not check that 'x' is a now-object.
-;   ;; The caller is responsible for ensuring that.
-;   (eq? 'ast-node (get-now-object-kind x)))
-; 
-; (define (ast-node? x)
-;   (and (now-object? x) (is-now-object-ast-node? x)))
-; 
-; (define (ast-node-kind node)
-;   (assert (is-now-object-ast-node? node))
-;   (get-now-object-member node "kind"))
-; 
-; (define (ast-node-value node)
-;   (assert (is-now-object-ast-node? node))
-;   (get-now-object-member node "value"))
+; (define (make-ast-node node-class node-value)
+;  (make-raw-now-object-from-pairs  `(
+;    ("kind"     ,(make-now-drawer-const "NodeKind" node-kind))
+;    ("value"    ,(make-now-drawer-const "NodeVal"  node-value)))))

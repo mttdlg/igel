@@ -3,6 +3,8 @@
 ;;
 ;; Copyright 2020 Matteo De Luigi
 ;;
+
+;;
 ;;  This file is part of IGEL
 ;;
 ;;  IGEL is free software: you can redistribute it and/or modify
@@ -18,8 +20,9 @@
 ;;  You should have received a copy of the GNU General Public License
 ;;  along with IGEL.  If not, see <http://www.gnu.org/licenses/>.
 ;;
+
 ;;
-;; Join a list of strings with a separator.
+;; Joins a list of strings with a separator.
 ;; It is mandatory to pass the separator as argument.
 ;;
 

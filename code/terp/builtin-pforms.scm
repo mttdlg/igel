@@ -21,48 +21,50 @@
 ;;  along with IGEL.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 
-;;
-;; TODO (low priority): use vectors instead of lists?
-;;   Possibly add extra list argument for varargs?
-;;
-;;     (define now.var scope node-vector node-list)
-;;
-;;   There will be a check that node-list is null
-;;   for non-vararg functions/forms?
-;; TODO: add checks for the correct number of arguments?
-;;
+;
+; TODO (low priority): use vectors instead of lists?
+;   Possibly add extra list argument for varargs?
+;
+;     (define now.var scope node-vector node-list)
+;
+;   There will be a check that node-list is null
+;   for non-vararg functions/forms?
+; TODO: add checks for the correct number of arguments?
+;
 
-;;
-;; TODO: provide a second set of PFORMS ('later' pforms?) that
-;; output a target language instead of executing
-;;
-;; (for instance, C++)
-;;
-;; Keep in mind that the back-end will have to 'manipulate'
-;; identifiers: an identifier which is not a reserved word
-;; in IGEL might be in the target language, and the adapter
-;; has to take care of that.
-;;
-;; Possibility: have an 'ID ADAPTER LAYER' which provides an
-;; Igel identifier and a target-language-identifier comes out.
-;; For a C target, for instance, 'default' might be automatically
-;; transformed into 'gen0_default'.
-;;
-;; Provide a way to explicitly map identifiers: for instance, a
-;; developer auto-translating an existing Igel library to C can
-;; ensure that the function named 'default' in Igel will always be
-;; mapped to, say, 'get_default()' in C.
-;;
+;
+; TODO: provide a second set of PFORMS ('later' pforms?) that
+; output a target language instead of executing
+;
+; (for instance, C++)
+;
+; Keep in mind that the back-end will have to 'manipulate'
+; identifiers: an identifier which is not a reserved word
+; in IGEL might be a reserved word in the target language
+; (for instance: 'default' in C/C++ -- the current plan
+; is not to have 'default' be a reserved word in IGEL)
+;
+; Possibility: have an 'ID ADAPTER LAYER' which takes an
+; Igel identifier as input and provides a corresponding
+; target-language-identifier as output.
+; For a C target, for instance, 'default' might be automatically
+; transformed into 'gen0_default'.
+;
+; Provide a way to explicitly map identifiers: for instance, a
+; developer auto-translating an existing Igel library to C can
+; ensure that the library function named 'default' in Igel will
+; consistently be mapped to, say, 'get_default()' in C.
+;
 
-(define (now.var scope nodes)
+(define (now.var scope-ref nodes)
   ;; Syntax
 
   ; delegate to semantics
 
   ;; Semantics
-  (bind-list (drawer-name type value) (parse-declaration scope (cdr nodes))
-    (now-add-drawer scope drawer-name type value)
-    none-singleton))
+  (bind-list (drawer-name type value) (parse-declaration scope-ref (cdr nodes))
+    (now-add-drawer scope-ref drawer-name type value)
+    now.none))
 ;;
 ;; Alternate experimental implementation (requires support
 ;; function "process-nodelist" in form-support.scm)
@@ -74,32 +76,37 @@
 ;                       (lambda (n) (ast-node->drawer-name scope n))
 ;                       (lambda (n) (ast-node-eval scope n))
 ;                       (lambda (n) (ast-node-eval scope n))))
-;   none-singleton)
+;   now.none)
 
 
-(define (now.const scope nodes)
+(define (now.const scope-ref nodes)
   ;; Syntax
 
   ; delegate to semantics
 
   ;; Semantics
-  (bind-list (drawer-name type value) (parse-declaration scope (cdr nodes))
-    (now-add-const scope drawer-name type value)
-    none-singleton))
+  (bind-list (drawer-name type value) (parse-declaration scope-ref (cdr nodes))
+    (now-add-const scope-ref drawer-name type value)
+    now.none))
 
-(define (now.rawattr.__call__ scope nodes)
-  (resolve-chain-to-rval resolve-rawattr-chain scope (cdr nodes)))
+(define (now.rawattr.__call__ scope-ref nodes)
+  (resolve-chain-to-rval resolve-rawattr-chain scope-ref (cdr nodes)))
 
-(define (now.rawattr.__set__ scope nodes)
+;;
+;; BOOKMARK: double-check the following procedure
+;;
+
+(define (now.rawattr.__set__ scope-ref nodes)
   (let ((args (cdr nodes)))
     ;; Syntax
     (check-arg-count 2 args "now.rawattr.__set__")
 
     ;; Semantics
     ;
-    ; For now we use bind-list as a shortcut, but we will eventually
-    ; need to raise a "now.Exception" in case we have the wrong number
-    ; of arguments.
+    ; For now we use bind-list as a shortcut, which also checks for the
+    ; correct number of arguments as a side effect, but we will eventually
+    ; need an explicit check which raises a "now.Exception" in case we have
+    ; the wrong number of arguments.
     ;
     ; Should functions take VECTORS of arguments, instead of lists?
     ; Variable list arguments are special designated vector slots. 
@@ -108,18 +115,18 @@
     ;
     ; Maybe we should also do away with passing argv[0]. We will
     ; only pass arguments for now, maybe provide arg0 later if
-    ; really needed (in that case, think of plan B)
+    ; really needed (in that case, think of a plan B)
     ;
     (bind-list (attr-chain-node value-node) args
-      (set-using-attr-chain scope
-                            (ast-node-value-from-kind attr-chain-node 'list)
-                            (ast-node-eval scope value-node)))))
+      (set-using-attr-chain! scope-ref
+                             (ast-node-value-from-kind attr-chain-node 'list)
+                             (ast-node-eval scope-ref value-node)))))
 
-(define (now.dot.__call__ scope nodes)
-  (resolve-chain-to-rval resolve-dot-chain scope (cdr nodes)))
+(define (now.dot.__call__ scope-ref nodes)
+  (resolve-chain-to-rval resolve-dot-chain scope-ref (cdr nodes)))
 
 ;; Placeholder:
-(define (now.dot.__set__ scope nodes)
+(define (now.dot.__set__ scope-ref nodes)
   ;; Syntax check: currently built into semantics
 
   ;; Semantics
@@ -127,52 +134,68 @@
         (value-node                           (list-ref nodes 2)))
     (if (null? tgt-list)
       (eval-error "Cannot pass empty target list to dot.__set__!")
-      (let ((head-obj (ast-node-eval scope (car tgt-list)))
+      (let ((head-obj (ast-node-eval scope-ref (car tgt-list)))
             (key-nodes (cdr tgt-list)))
-      (resolve-dot-set-chain scope head-obj key-nodes value-node)))))
+      (resolve-dot-set-chain scope-ref head-obj key-nodes value-node)))))
 
-
+;; This object is defined for testing purposes during development.
+;; It will disappear in the final version of the language.
 (define (make-now.delegator-greet kind)
-  (lambda (scope nodes)
+  (lambda (scope-ref nodes)
     (string-append
       "<Hello! Delegator ("
       kind
       ") test here, with arguments ("
-      (join (map ast-node->string nodes))
+      (join (map ast-node->string nodes)) ; TODO: change to use the new, built-in
+                                          ; stringification infrastructure of types.
+                                          ; Maybe start by using now-val-> string 
+                                          ; instead.
       ")>")))
 
-(define (now.write scope nodes)
+(define (now.write scope-ref nodes)
   ;; Syntax
   ; -- no check --
 
   ;; Semantics
   (for-each
     (lambda (node)
-      (display (now-val->string (ast-node-eval scope node))))
+      (display (now-val->string (ast-node-eval scope-ref node))))
     (cdr nodes))
-  none-singleton)
+  now.none)
 
-(define (now.print scope nodes)
+(define (now.print scope-ref nodes)
   ;; Syntax
   ; -- no check --
 
   ;; Semantics
-  (now.write scope nodes)
+  (now.write scope-ref nodes)
   (newline)
-  none-singleton)
+  now.none)
 
-(define (now.set scope nodes)
+(define (now.set scope-ref nodes)
     ;;
-    ;; Current question...
-    ;; WHO EVALUATES THE TARGET?
     ;;
-    ;; It should logically be SET before delegating.
-    ;; However, delegated __set__ would have a mixed syntax/semantics 
-    ;; list.
+    ;; now-language syntax:
     ;;
-    ;; Turns out it is actually necessary.
+    ;;    now.set target-node value-node
     ;;
-    ;; See also: commentsi in file ' set-support.scm '
+    ;; if target-node is an ID, this form handles it directly.
+    ;; if target-node is a list, this form will delegate evaluation.
+    ;;
+    ;; Current question:
+    ;; "Who is responsible for evaluating the 'value-node' in case
+    ;; of delegation?"
+    ;;
+    ;; One would expect that 'set' evaluates the value-node in any
+    ;; case, before delegating.
+    ;;
+    ;; However, by doing so, the form we delegate to would
+    ;; have a mixed syntax/semantics (now/later) argument list.
+    ;;
+    ;; What we do now: if we delegate, we also delegate the
+    ;; evaluation of the 'value node' to '__set__'.
+    ;;
+    ;; See also: comments in file ' set-support.scm '
     ;;
 
 
@@ -183,18 +206,18 @@
   (let ((target-node (list-ref nodes 1))  ;; TODO: improve logic here, split 'id' and 'list', delegate?
         (value-node  (list-ref nodes 2))) ;; Current concept: delegate evaluation
 
-  ;; Should we return none-singleton ? Delegate?
+  ;; Should we return now.none ? Delegate?
   ;; Probably delegate?
   (case (ast-node-kind target-node)
-    ((id) (set-id-string-to-value scope (ast-node-value target-node) (ast-node-eval scope value-node)))
-    ((list) (set-using-invocation scope (ast-node-value target-node) value-node))
+    ((id) (set-id-string-to-value scope-ref (ast-node-value target-node) (ast-node-eval scope-ref value-node)))
+    ((list) (set-using-invocation scope-ref (ast-node-value target-node) value-node))
     (else => (lambda (kind)
                (error (string-append "Unhandled node kind ('"
                                      (symbol->string kind)
                                      "') as target for now.set")))))))
 
 
-(define (now.while scope nodes)
+(define (now.while scope-ref nodes)
   ;; Syntax
   (check-arg-count 2 (cdr nodes) "now.while")
 
@@ -206,20 +229,21 @@
   ; (assuming no control-flow-altering
   ; statements like 'return' were executed)
   ; If no evaluations took place,
-  ; none-singleton is returned. Consider: should
-  ; it be changed to always return none-singleton ?
+  ; now.none is returned. Consider: should
+  ; it be changed to always return now.none ?
   ; (that was the old behaviour)
-  ; Should its outcome be 'unspecified'
-  ; to allow mapping to different programming
-  ; languages?
+  ; Should its outcome be unspecified,
+  ; to allow mapping the 'now.while' construct
+  ; to different programming languages
+  ; with minimal fiddling?
   ; Or, for mapping purposes, is it better
   ; to leave it like it is now? 
   ;
   (let ((condition-node (list-ref nodes 1))
         (block-node     (list-ref nodes 2)))
-    (let loop ((result none-singleton))
-      (if (bool-value-true? (ast-node-eval scope condition-node))
-        (let ((iteration-outcome (now-eval-block-new-scope scope block-node)))
+    (let loop ((result now.none))
+      (if (igel-value-true? (ast-node-eval scope-ref condition-node))
+        (let ((iteration-outcome (now-eval-block-new-scope scope-ref block-node)))
           (cond
             ((pair? iteration-outcome)
              (case (car iteration-outcome)
@@ -231,30 +255,32 @@
 
 ;;
 ;; TODO: perform one syntax check at beginning? Right now, a syntax error
-;; (else -> xlse) late in the chain isn't even caught if the else
-;; case is never reached...
+;; (for instance, a typo: 'xlse' instead of 'else') late in the chain
+;; isn't even caught if the 'else' case is never reached.
+;; Should we document things and leave like this?
 ;;
 ;; TODO: generic evaluation, not block-evaluation specifically?
 ;;
 ;; set x [if [eq y 1] 2 else 3]
 ;;
-;; might be a bit tricky to determine type...
+;; Will have to decide on an algorithm for determining type of result.
 ;; Allow to specify type explicitly?
-(define (now.if scope nodes)
+;;
+(define (now.if scope-ref nodes)
 
   (define (if-chain nodes)
     (if (or (null? nodes)
             (null? (cdr nodes)))
       (error "Wrong number of arguments to 'if'")
-      (if (bool-value-true? (ast-node-eval scope (car nodes)))
-        (now-eval-block-new-scope scope (cadr nodes))
+      (if (igel-value-true? (ast-node-eval scope-ref (car nodes)))
+        (now-eval-block-new-scope scope-ref (cadr nodes))
         (else-chain (cddr nodes)))))
 
   (define (else-chain nodes)
     (cond
-      ((null? nodes) none-singleton)
+      ((null? nodes) now.none)
       ((null? (cdr nodes)) ; default unmarked 'else'
-       (now-eval-block-new-scope scope (car nodes)))
+       (now-eval-block-new-scope scope-ref (car nodes)))
       (else
         (let ((seen-id (ast-node-value-from-kind (car nodes) 'id)))
           (cond
@@ -271,44 +297,49 @@
   ;;
   (if-chain (cdr nodes)))
 
-(define (now.return scope nodes)
+(define (now.return scope-ref nodes)
   ;; Syntax
   (check-arg-count 1 (cdr nodes) "now.return")
 
   ;; Semantics
-  (let ((return-value (ast-node-eval scope (list-ref nodes 1))))
+  (let ((return-value (ast-node-eval scope-ref (list-ref nodes 1))))
     `(return ,return-value)))
 
-;;
-;; make-now-proc-callable :
-;;
-;;    Support function used to turn a signature/body pair
-;;    provided by the user (for instance, using 'now.proc')
-;;    into a (lambda (scope nodes) ...) that can be invoked
-;;    by the evaluator when the syntactic signature of
-;;    the defined procedure is encountered.
-;;
-;; TODO: using a dirty trick now, we skip empty argument entries
-;; Formalise definition of "{}" , then adjust the logic
-;; to have an error on empty argument entries
-;; (but not having any entry is OK -- so, for instance:
-;;   { Int a ; ; ; ; } -> NOT ok
-;;   {} -> ok
-;;
-;; ...or should we just always accept and skip
-;; empty entries?
-;;
+;
+; make-now-proc-callable :
+;
+;    Support function used to turn a signature/body pair
+;    provided by the user (for instance, using 'now.proc')
+;    into a (lambda (scope nodes) ...) that can be invoked
+;    by the evaluator when the syntactic signature of
+;    the defined procedure is encountered.
+;
+; TODO: using a dirty trick now, we skip empty argument entries
+; Formalise definition of "{}" , then adjust the logic
+; to have an error on empty argument entries
+; (but not having any entry is OK -- so, for instance:
+;   { Int a ; ; ; ; } -> NOT ok
+;   {} -> ok
+;
+; ...or should we just always accept and skip
+; empty entries?
+;
+
+;
+; TODO: check signature syntax at definition time?
+; Makes sense for proc, but not for form...
+;
+; TODO: improve handling of 'undefined for type.
+; Right now we ignore the type, but in the future
+; we might want something that is not a scheme
+; symbol? Maybe an Igel-level symbol? Or an
+; Igel-level singleton (like None in Python)
+;
 
 ;;
-;; TODO: check signature syntax at definition time?
-;; Makes sense for proc, but not for form...
+;; BOOKMARK <--- continue double-checking code from here.
 ;;
-;; TODO: improve handling of 'undefined for type.
-;; Right now we ignore the type, but in the future
-;; we might want something that is not a scheme
-;; symbol? Maybe an Igel-level symbol? Or an
-;; Igel-level singleton (like None in Python)
-;;
+
 (define (make-now-proc-callable signature body)
 
   (define expected-arg-count (length signature)) 
@@ -430,7 +461,14 @@
                        lval
                        "Proc" ;; TODO: this is a placeholder, change!
                        (make-now-proc-callable signature body))
-        none-singleton)))) ;; TODO: Should it return none-singleton? The procedure?
+        now.none)))) ;; TODO: Should it return now.none ? The procedure?
+
+;
+; Misc built-in mainly for testing purposes
+; in the early phase of development.
+; Consider removing them once the codebase
+; is mature enough
+;
 
 ;; TODO: rename to 'syntax-quote'?
 (define (now.quote-node scope nodes)

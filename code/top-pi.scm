@@ -54,7 +54,7 @@
 ;;
 ;; Base Types
 ;;
-(load-ct "top-basetypes.scm")
+(load-ct "top-types.scm")
 
 ;;
 ;; Syntax (text -> AST)

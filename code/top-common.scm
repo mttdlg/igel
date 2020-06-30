@@ -26,5 +26,7 @@
 ; (print-header "Loading common libraries")
 (load-ct "lib/join.scm")
 (load-ct "lib/any-to-string.scm")
+(load-ct "lib/unique-id.scm")
+(load-ct "lib/default-arguments.scm")
 (load-ct "support.scm")
 

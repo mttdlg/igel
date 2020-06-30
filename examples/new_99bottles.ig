@@ -2,7 +2,7 @@
 
 const startingBottles: int 99;
 
-proc bottlesString {n: int; capitalize} : string {
+proc bottlesString {n: int; capitalize: bool} : string {
     var s: string
 
     if [gt n 1] {
@@ -40,6 +40,7 @@ proc pronoun {n: int} : string {
 }
 
 proc mainBottles {max_n: int} {
+    # state n [Bit 4 0] reset: 0
     # state n [Mvl 4 0] -reset "00000"
     # state n [Mvl 4 0] -reset 0
     # state n [Mvl 4 0] -reset "XXXXX"

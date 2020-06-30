@@ -20,8 +20,8 @@
 ;;
 
 ;;
-;; Note: IGEL has not been tested with chibi-scheme in quite some time.
-;; chibi-scheme support has to be considered 'unmantained'
+;; Note: the codebase has not been tested with chibi-scheme in quite some time.
+;; This target has to be considered 'unmantained'
 ;;
 
 (import (scheme small))

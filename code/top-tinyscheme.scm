@@ -36,5 +36,6 @@
 
 ; (tracing 1)
 
+; (gensym)
 (load "./platform/platform-tinyscheme.scm")
 (load "./top-pi.scm")

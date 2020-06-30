@@ -44,12 +44,11 @@
 ;; use read-* instead of fetch-* ?
 ;;
 
-
-;; Main stuff:
-
 ;;;;
 ;;
-;; Internal stuff, not to be exported? Double-check.
+;; Tokens are not expected to be exposed, they
+;; count as 'internals'. We will expose AST nodes
+;; after parsing.
 ;;
 ;;;;
 
@@ -62,11 +61,7 @@
 ;; distinct from the physical line terminator
 ;; (char-eol?) defined elsewhere
 ;;
-;; TODO: how is END OF FILE handled?
-;; /technically/, that counts as a line terminator, too.
-;; Do we artificially insert a "virtual line terminator"
-;; before it?
-;;
+
 (define (char-line-terminator? c)
   (or (char-eol? c)
       (char=? c #\;)))
@@ -82,10 +77,9 @@
 ;;
 
 (define (char-noneol-whitespace? c)
-  (cond
-    ((char-eol? c) #f)
-    ((char-whitespace? c) #t)
-    (else #f)))
+  (if (char-eol? c)
+      #f
+      (char-whitespace? c)))
 
 (define (discard-nonterminating-whitespace char-instream)
   (let ((c (instream-peek-item char-instream)))
@@ -135,29 +129,25 @@
 ))
 
 ;;
-;; Dot (object hierarchy separator)
+;; Dot (access separator)
 ;;
 (define (char-dot? c)
   (char=? c #\.))
 
-;; TODO: check if the '?' convention
-;; implies a boolean result. If not,
-;; you can optimize and return a list
-;; directly.
+;; TODO: double-check that the scheme 
+;; convention for predicates is that
+;; a name ending with '?' implies a
+;; boolean result. If not, one can
+;; optimize and return a list directly.
 ;;
-;; TODO: move the following function(s?) elsewhere.
+;; TODO: maybe move the following function(s?)
+;; elsewhere?
 (define (char-special? c)
   (any->boolean (assoc c special-chars)))
 
-;;
-;; Todo: handle multi-character specials?
-;; Should stuff like {xyz: be allowed?
-;; No. At least, not in the early stages. 
-;; But allow {:xyz: . Easier to parse.
-;;
 ;; Note: it is safe to use 'assoc-ref'
-;; because #f cannot be associated with
-;; any key so it unambiguously means that
+;; because #f is not associated with
+;; any key, so it unambiguously means that
 ;; the key was not found.
 (define (fetch-special-char char-instream)
   (let* ((c (instream-read-item char-instream))
@@ -176,7 +166,7 @@
 
 ;;
 ;; Let's start simple. Just integers.
-;; Reals will come later.
+;; Floating point will be left for later.
 ;;
 ;; TODO: now number-strings are converted to scheme numbers
 ;; using string->number. Update to a more sophisticated approach?
@@ -350,6 +340,7 @@
                                            "'")))))) ;; Implicitly imply the error is at the CURRENT position.
       ;;
       ;; Maybe we could...
+      ;;
       ;; 1) make "-" a separate token,
       ;; and the parser will recognise either the
       ;; sequence "-" "number" or the sequence
@@ -362,18 +353,9 @@
       ;; It must, of course, be tested before
       ;; 'valid-initial-number-character?'
       ;;
-      ;; 3) Not use "-" for options, but use
-      ;; something else, like ":". They could
-      ;; be called something like "labels" or
-      ;; "symbols", and handled in a special way
-      ;;
-      ;; * When used as command, the semantics will decide
-      ;; what to do with them.
-      ;; It could be an error to have a 'label in command position',
-      ;; it could be handled directly in the "meta-language",
-      ;; or they might be passed to a different, special command
-      ;; to be defined as a special field in the object that represents
-      ;; the semantics.
+      ;; 3) Not use "-" for options, use a different
+      ;; character (but that would be counterintuitive
+      ;; for people used to the shell or TCL)
       ;;
 
 ;;;;
@@ -424,8 +406,8 @@
         "', got '" (symbol->string (car tok))
         "' instead."))))
 
-;; List of constant kinds, to be used later
-;; (for instance, to determine if an AST node
-;; is a constant or an expression)
-(define lexer-constant-kinds
-  '(int string))
+; ;; List of constant kinds, to be used later
+; ;; (for instance, to determine if an AST node
+; ;; is a constant or an expression)
+; (define lexer-constant-kinds
+;   '(int string))

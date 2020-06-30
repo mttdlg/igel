@@ -28,30 +28,11 @@
 
 ;; Misc helper functions.
 
-;;
-;; Check that all elements of a list
-;; satisfy a predicate.
-;;
-;; It is not specified how many times
-;; the predicate will be applied, nor
-;; to which elements (so do not use
-;; the predicate for side effects).
-;;
-;; If one element fails the check,
-;; return #f immediately, and do not apply
-;; the predicate to the following ones.
-;;
-;(define (all-pass? check? l)
-;  (cond
-;    ((null? l) #t)
-;    ((if (check? (car l))
-;      (all-pass? check? (cdr l))
-;      #f))))
-
 ;; assoc-ref: see if there's a way to define it
 ;; only if the implementation does not provide it
 ;; (some do, like gauche and guile.
 ;;  some do not, like chicken)
+;; Worst case scenario: we move it to a platform-dependent file.
 
 ;; TODO: replace with hash?
 ;; Make it generic ('table'), so it works
@@ -63,11 +44,12 @@
       #f)))
 
 ;;
-;; Make result a boolean
+;; Normalize result as a boolean.
+;;
 ;; (this will be used as part
 ;; of other predicates, which
-;; are expected to return a
-;; boolean, not a list)
+;; are expected to return
+;; either #t or #f)
 ;;
 (define (member? elem l)
   (if (member elem l) #t #f))
@@ -85,7 +67,8 @@
 ;; whose corresponding predicate is
 ;; "char-line-terminator?"
 ;;
-
+;; TODO: make sure you take different OS conventions
+;; into account (which we are not considering right now)
 (define (char-eol? c)
   (char=? c #\newline))
 
@@ -98,8 +81,9 @@
   ;; Because alist->hash-table expect the value
   ;; to be the cdr of each sub-list, not the cadr.
   ;;
-  ;; TODO: maybe we should get rid of this function and
-  ;; define init-lists using the dot-notation instead.
+  ;; TODO: maybe we could get rid of this function and
+  ;; define init-lists using alist->hash-table and
+  ;; improper lists instead.
   ;;
   (let ((hash-table (make-hash-table)))
     (for-each

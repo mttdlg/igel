@@ -1,8 +1,14 @@
-;;
-;; Extra support functions for
-;; dealing with types
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                          ;;
+;;       Base types         ;;
+;;                          ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;;
 ;; Copyright 2020 Matteo De Luigi
+;;
+
 ;;
 ;;  This file is part of IGEL
 ;;
@@ -21,20 +27,21 @@
 ;;
 
 ;;
-;; Will evaluate an IGEL now.bool value
-;; and convert it to a scheme boolean.
-;; Will be used, for instance, in the
-;; implementation of flow control
-;; constructs.
+;; TODO: fix relative paths. Right now we must
+;; express paths with respect to the top file.
+;; We want to express them relative to the current
+;; directory.
 ;;
-;; At the current stage in the implementation,
-;; primitive IGEL types are mapped /directly/
-;; to scheme values already, so no conversion
-;; is necessary and the function is trivial.
-;;
-;; However, this will change in the near future.
-;;
-(define (bool-value-true? igel-bool)
-  ; (assert (boolean? igel-bool))
-  igel-bool)
 
+;;
+;; Type system:
+;;
+(load-ct "types/types-support.scm")
+(load-ct "types/placeholders.scm")
+(load-ct "types/drawer.scm")
+(load-ct "types/drawer-table.scm")
+(load-ct "types/basic-types.scm")
+(load-ct "types/idtable.scm")
+(load-ct "types/arrays.scm")
+(load-ct "types/objects.scm")
+(load-ct "types/ref.scm")

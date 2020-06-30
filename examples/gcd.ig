@@ -1,6 +1,6 @@
 #!/usr/bin/env igel
 
-proc pick {f_cmp : fn; a: int; b: int} {
+proc pick {f_cmp : [function {int; int} : int]; a: int; b: int} {
     if [f_cmp a b] {
         return a
     } else {

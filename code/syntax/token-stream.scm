@@ -28,9 +28,10 @@
 ;; parsing the token.
 ;; This way, backtracking can switch from token-mode to char-mode
 ;;
-;; UPDATE: do not allow custom syntax at parser level. Provide a mechanism
-;; to slurp in whole strings. Return them as strings. Remove backtarcking
-;; entierely.
+;; UPDATE: do not allow custom syntax at parser level, do not allow
+;; backtracking. Provide a mechanism to slurp in whole blocks.
+;; Return them as strings. Parse string using string function/methods
+;; to access characters, do not meddle with the internals.
 ;;
 ;; Example:
 ;;

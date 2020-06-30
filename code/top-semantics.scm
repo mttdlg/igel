@@ -40,7 +40,7 @@
 (load-ct "terp/dot-support.scm")
 
 ;;
-;; Now-Interpreter:
+;; now-Interpreter:
 ;; main execute/eval logic
 ;;
 (load-ct "terp/execute-form.scm")
@@ -48,16 +48,22 @@
 (load-ct "terp/now-terp.scm")
 
 ;;
-;; Now-interpreter: syntax extensions
+;; now-interpreter: syntax extensions
 ;;
 (load-ct "terp/parse-decl.scm") ;; Are type signature constructs part of the basic syntax, or the specific languge?
                                 ;; For now, we consider them 'syntax extensions' to the 100% guarranteed common core,
                                 ;; and postpone the decision to later.
                                 ;; Note that they can be considered syntax extensions only if there is a way to
                                 ;; add them to the base language. Define what "there is a way" means. Who should
-                                ;; "provide a way"? The default language? The now-language?
+                                ;; "provide a way"? The default 'later' language? The now-language?
+
+;
+; We now have the basic machinery of the interpeter in place.
+; Time to fill its data structures with built-ins.
+;
+
 ;;
-;; Language semantics
+;; now-language builtins
 ;;
-(load-ct "terp/builtin-pforms.scm")
+(load-ct "terp/builtin-pforms.scm") ; <-- BOOKMARK: this is the next file to review.
 (load-ct "terp/form-tables.scm")

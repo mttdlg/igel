@@ -23,10 +23,12 @@
 ; This file deals with parsing declarations
 ; expressed in one of these formats:
 ;
-; a : int = 5
+; a
+; a 5
+; a = 5
+; a : int
 ; a : int 5
-; a int = 5
-; a int 5
+; a : int = 5
 ;
 ; Question: Should a full declaration syntax (type included) be allowed in assignments?
 ;
@@ -69,23 +71,6 @@
 ;
 
 ;
-; TODO: forbid scheme #t and #f as canonical boolean
-; values within the interpreter. Use separate
-; Igel-values as canonical true/false values.
-; (should 'canonical true' and 'canonical false'
-; be objects? Symbols? Both?)
-; Will everything in igel be an object?
-; A better way to word it: perhaps everything
-; will /have/ an associated now.object
-; (and /be/ an object at /compile/ time)
-; but not everything will /be/ a later.object
-; (and /be/ an object at /run/ time)
-;
-
-; TODO: implement proper logic;
-; placeholder for now:
-(define (compatible-with-type? value type) #t)
-;
 ; ...we need to come up with a concept for
 ; a 'type combiner' ('integrator' in
 ; digital design terms -- but 'integrator'
@@ -100,7 +85,7 @@
 ;; Current concept -> var ostrich : [DefaultTypeIntegrator Bird Runner]
 ;; Current concept -> var ostrich : [TrivialTypeIntegrator Bird Runner]
 ;; Current concept -> var ostrich : [ManualTypeIntegrator  Bird Runner {
-;;          Fn run {target} = Bird.Runner
+;;          fn run {target} = Bird.Runner
 ;;    }]
 
 ;
@@ -109,18 +94,17 @@
 (define (new-value-if-ok type new-value)
   (if (eq? type 'undefined)
     new-value
-    (if (compatible-with-type? new-value type)
+    (if (type-accepts-value? type new-value)
       new-value
-      (error "Value and type are incompatible"))))
+      (error "Type and value are incompatible in declaration")))) ;; TODO: now.Exception
 
-(define (checked-type-node node)
-  ;; TODO: implement list (evaluation)
-  ;; For things like [Bits 3 0]
-  (case (ast-node-kind node)
-    ((id) node)
-    (else => (lambda (kind) (error (string-append
-                                  "Unhandled type kind "
-                                  (symbol->string kind)))))))
+; (define (checked-type-node scope-ref node)
+;   ;; TODO: implement list (evaluation)
+;   ;; For things like [Bits 3 0]
+;   (let ((result (ast-node-eval scope-ref node)))
+;     (if (type-accepts-value? now.type result)
+;         result
+;         (error ("Expecting type, got something else instead."))))) ; TODO: now.Exception
 
 ;
 ; Main declaration-parsing function
@@ -136,33 +120,37 @@
 
 ;;
 ;; TODO: replace 'error-and-exit' until the end of the file
-;; with now-time exceptions.
+;; with now.Exception's.
 ;;
 
 ;; TODO: replace parsing. Have 'parse-all' and, specifically, 'parse-equal'
 ;;       So that the order is respected, and if colon follows immediately,
 ;;       we know the colon goes to qualify the value, not the declaration.
 ;;
-(define (parse-declaration-nodes scope signature)
+(define (extract-declaration-nodes scope-ref declaration-nodes) ;; Will return nodes, will not evaluate
   (define (parse-declaration-value nodes-left type)
     (cond
       ((null? nodes-left) 'undefined)
       ((null? (cdr nodes-left))
        (car nodes-left))
       (else
-        (error-and-exit "Parse-value expects one node only!"))))
+        (error-and-exit "parse-declaration-value got more than one node")))) ;; Actually, internal error? Not a now.Exception ?
+                                                                             ;; ...should internal errors also be now.Exceptions?
+                                                                             ;; To provide workarounds until a new fixed version
+                                                                             ;; of the now-interpreter is released...
 
   ;;
-  ;; Main body of "parse-declaration":
+  ;; Main body of "extract-declaration-nodes":
   ;;
 
   ;;
   ;; TODO: since 'value' always comes last, and is always tail-delegated, it seems,
-  ;; logic can be simplified and 'value' parameter can be removed from 'parse-rest':
+  ;; the logic can be simplified and the 'value' parameter can be removed from
+  ;; 'parse-rest':
   ;;
 
-  (let ((node-name (car signature)))
-    (let parse-rest ((nodes-left (cdr signature))
+  (let ((node-name (car declaration-nodes)))
+    (let parse-rest ((nodes-left (cdr declaration-nodes))
                      (node-type  'undefined))
       (cond
         ((null? nodes-left)
@@ -172,7 +160,7 @@
         (else
           (let ((next-node (car nodes-left)))
             (case (ast-node-kind next-node)
-              ((colon) (let ((new-node-type (checked-type-node (cadr nodes-left))))
+              ((colon) (let ((new-node-type (cadr nodes-left)))
                          (if (not (eq? node-type 'undefined))
                            (error-and-exit "Multiple type declarations.")
                            (parse-rest (cddr nodes-left)
@@ -183,8 +171,10 @@
                         (if (null? nodes-after-equal) ;; This check has already been performed
                                                       ;; earlier, but we leave it around for
                                                       ;; robustness to non-local changes
-                                                      ;; (i.e., we change earlier check but
-                                                      ;; forget to update this line)
+                                                      ;; (i.e., in case we change the code
+                                                      ;; where the earlier check is, but
+                                                      ;; forget to update this section of
+                                                      ;; the code)
                           (error-and-exit "'=' in declaration not followed by value")
                           (list node-name node-type (parse-declaration-value nodes-after-equal
                                                                              node-type))))))
@@ -198,18 +188,15 @@
         ;;       (we will have to see if this is feasible, or if it will create problems)
         ;;       It might be simpler to write something like [int 3] instead.
 
-(define (parse-declaration scope signature) ; signature is a list of nodes.
-
-  (define (eval-node-if-defined node)
-    (if (eq? node 'undefined)
-      'undefined
-      (ast-node-eval scope node)))
+(define (parse-declaration scope-ref declaration-nodes) ; declaration-nodes is a list of nodes.
 
   (bind-list (node-name node-type node-value) 
-             (parse-declaration-nodes scope signature)
+             (extract-declaration-nodes scope-ref declaration-nodes)
     (let ((type (eval-node-if-defined node-type))
           (candidate-value (eval-node-if-defined node-value)))
-      (list (ast-node->drawer-name scope node-name)
+      (if (not (type-accepts-value? now.type type))
+          (error "Invalid type in declaration")) ; TODO: now.Exception
+      (list (ast-node->drawer-name scope-ref node-name)
             type
             (new-value-if-ok type candidate-value)))))
 

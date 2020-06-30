@@ -1,8 +1,10 @@
 ;;
 ;; Extensible any->string
-;; depends on: join.scm
+;; ( depends on: join.scm )
 ;;
 ;; Copyright 2020 Matteo De Luigi
+;;
+
 ;;
 ;;  This file is part of IGEL
 ;;

@@ -22,23 +22,10 @@
 ;;
 ;;
 
-(define (list->ast-node l)
-  ;; takes:   `(,kind ,value)
-  ;; returns: <opaque AST node struct>
-  ;;
-  ;; TODO: remove, replace with appropraite
-  ;; uses of make-ast-node 
-  ;;
-  (assert (= 2 (length l)))
-  (apply make-ast-node l))
-  ; (make-ast-node (car l) (cadr l)))
-
-(define (terminator->ast-node token)
-  ;;
-  ;; Temporary kind used only internally.
-  ;; TODO: replace with a different kind?
-  ;;
-  (make-ast-node 'internal-token token))
+(define-record-type <terminator-marker>
+  (make-terminator-marker token)
+  terminator-marker?
+  (token terminator-marker-get-token))
 
 (define (token->ast-node token)
   (make-ast-node (token-get-kind token) (token-get-value token)))
@@ -60,11 +47,14 @@
 ;; Syntax match support
 ;;
 
-(define (ast-node-kind-constant? node)
-  (member? (ast-node-kind node) lexer-constant-kinds))
+; (define (ast-node-kind-constant? node)
+;   (member? (ast-node-kind node) lexer-constant-kinds))
 
 ;;
-;; Used for tests/debugging only? Double-check:
+;; Used for tests/debugging only at the moment.
+;; TODO: should be replaced by something better
+;; and evolve into the official 'stringification'
+;; routine for the AST node type.
 ;;
 (define (ast-node->string node)
 

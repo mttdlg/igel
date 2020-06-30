@@ -19,16 +19,16 @@
 ;;  along with IGEL.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 
-;;
-;; Takes an Abstract Syntax Tree as input,
-;; interprets commands
-;;
+;
+; Takes an Abstract Syntax Tree as input,
+; interprets commands
+;
 
-;;
-;; TODO: Should '-ti', return a specific
-;; record data structure (terminator/node)
-;; instead of 'car/cdr' lists?
-;;
+;
+; TODO: Should '-ti', return a specific
+; record data structure (terminator/node)
+; instead of 'car/cdr' lists?
+;
 
 (define (display-args args) 
   (for-each
@@ -60,17 +60,17 @@
   (newline)
   (display-args ast-args))
 
-(define (eval-nodes-as-statement scope list-of-syntax-nodes)
+(define (eval-nodes-as-statement scope-ref list-of-syntax-nodes)
   (if (null? list-of-syntax-nodes)
     (eval-error "It is illegal to evaluate the empty statement with 'eval-nodes-as-statement'.")
-    (let ((form-result (execute-form scope list-of-syntax-nodes)))
+    (let ((form-result (execute-form scope-ref list-of-syntax-nodes)))
       (cond
-        ((none-singleton? form-result) form-result) ;; We expect STATEMENTS to not have a return value.
+        ((now.none? form-result) form-result) ;; We expect STATEMENTS to not have a return value.
         ; ((igel-value? form-result) form-result)
         ((pair? form-result)
           (case (car form-result)
             ((return) form-result)
-            ((void) (error "INTERNAL ERROR: '(void) is obsolete, use none-singleton instead!"))
+            ((void) (error "INTERNAL ERROR: '(void) is obsolete, use now.none instead!"))
             ;;
             ;; TODO: improve handling of results?
             ;;
@@ -106,7 +106,7 @@
 ; (define (now-eval-exp node scope)
 ;   (error "now-eval-exp: not yet implemented"))
 
-(define (now-eval-block-as-statements scope node)
+(define (now-eval-block-as-statements scope-ref node)
   ;;
   ;; TODO: structure is complex, simplify.
   ;; Maybe split into sub-functions, if possible?
@@ -114,7 +114,7 @@
   (cond
     ((ast-node-kind-match? node 'block)
      (let now-terp-do-block-lines ((list-of-line-nodes (ast-node-value node))
-                                   (last-result none-singleton))
+                                   (last-result now.none))
        (if (null? list-of-line-nodes)
          last-result
          (let ((current-statement-as-list (ast-node-value-from-kind (car list-of-line-nodes) 'list)))
@@ -145,10 +145,11 @@
              ;; Proposal: CORE language will work in a manner compatible with a
              ;; stack-based execution model.
              ;;
-             ;; If a semantics-implementer wants to get call/cc fancy, they can always
-             ;; implement CORE language in terms of it, with call/cc being a non-standard
-             ;; extension. It is okay if CORE language (at least for the first draft) is
-             ;; not powerful enough to express call/cc .
+             ;; If a later-language-implementer wants a scheme-style call/cc where the
+             ;; execution model relies on a continuation tree instead of a stack, it is
+             ;; always possible to re-implement the CORE language in terms of continuations,
+             ;; with call/cc being a non-standard extension. It is okay if CORE language
+             ;; (at least for the first draft) is not powerful enough to express call/cc .
              ;; Maybe call/cc might be optional extension later on?
              ;; Kind of like how atomic memory operations are an optional extension
              ;; for RISC-V?
@@ -156,7 +157,7 @@
              ;; It would, however, be /very/ nice to have a construct for explicitly
              ;; requesting tail call optimization. Look into that...
              ;;
-             (let ((result-of-statement (eval-nodes-as-statement scope current-statement-as-list)))
+             (let ((result-of-statement (eval-nodes-as-statement scope-ref current-statement-as-list)))
                (if (pair? result-of-statement)
                  (case (car result-of-statement)
                    ((return) result-of-statement) ;; We might have to propagate, otherwise it will only exit the BLOCK.
@@ -175,21 +176,22 @@
       ;; For now.
       (error "INTERNAL ERROR: invalid node in AST: expecting block, got something else."))))
 
-(define (now-eval-block-new-scope scope node)
-  (now-eval-block-as-statements (make-sub-scope scope) node))
+(define (now-eval-block-new-scope scope-ref node)
+  (define fresh-scope-ref (make-igel-value type-now.ref-to-now.Scope (make-sub-scope scope-ref)))
+
+  (now-eval-block-as-statements fresh-scope-ref node))
 ;;
 ;; Main body
 ;;
-; (write ast)(newline)
 
-(define (now-terp scope ast)
-  (now-eval-block-as-statements scope ast))
+(define (now-terp scope-ref ast)
+  (now-eval-block-as-statements scope-ref ast))
 
 ;;
 ;; TODO: merge with 'now-terp'?
 ;;
-(define (parse-and-eval-statements scope stream)
-  (let eval-loop ((previous-result none-singleton))
+(define (parse-and-eval-statements scope-ref stream)
+  (let eval-loop ((previous-result now.none))
     (let* ((l (parse-statement-checked-ti stream))
            (terminator (car l))
            (the-form (cdr l)))
@@ -197,7 +199,7 @@
       (let* ((the-form-node-list (ast-node-value the-form))
              (result (if (null? the-form-node-list)
                        previous-result
-                       (eval-nodes-as-statement scope the-form-node-list))))
+                       (eval-nodes-as-statement scope-ref the-form-node-list))))
         (if (token-kind-is? terminator 'eof)
           result
           (eval-loop result))))))

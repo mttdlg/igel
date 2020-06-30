@@ -115,16 +115,16 @@
 
   (for-each
     (lambda (info)
-      (extend-scope-with-form-info scope-to-extend "fn" info))
+      (extend-scope-with-form-info scope-to-extend "Proc" info))
     `(
       ("rawattr" ,(make-raw-now-object-from-pairs
-                   "fn"
-                   `(("__call__" ,(make-now-drawer-const "fn" now.rawattr.__call__))
-                     ("__set__"  ,(make-now-drawer-const "fn" now.rawattr.__set__)))))
+                   "Proc"
+                   `(("__call__" ,(make-now-drawer-const "Proc" now.rawattr.__call__))
+                     ("__set__"  ,(make-now-drawer-const "Proc" now.rawattr.__set__)))))
       ("dot"    ,(make-raw-now-object-from-pairs
-                   "fn"
-                   `(("__call__" ,(make-now-drawer-const "fn" now.dot.__call__))
-                     ("__set__"  ,(make-now-drawer-const "fn" now.dot.__set__)))))
+                   "Proc"
+                   `(("__call__" ,(make-now-drawer-const "Proc" now.dot.__call__))
+                     ("__set__"  ,(make-now-drawer-const "Proc" now.dot.__set__)))))
       ("var"    ,now.var    )
       ("const"  ,now.const  )
       ("write"  ,now.write  )
@@ -232,24 +232,24 @@
 
 (define now.knum (make-raw-now-object-from-pairs 'namespace
   `(
-      ("one"   ,(make-now-drawer-const "int" 1))
-      ("two"   ,(make-now-drawer-const "int" 2))
-      ("three" ,(make-now-drawer-const "int" 3))
-      ("x"     ,(make-now-drawer-var   "int" 4))
+      ("one"   ,(make-now-drawer-const "Int" 1))
+      ("two"   ,(make-now-drawer-const "Int" 2))
+      ("three" ,(make-now-drawer-const "Int" 3))
+      ("x"     ,(make-now-drawer-var   "Int" 4))
   )))
 
 (define now.delegator (make-raw-now-object-from-pairs 'namespace
   `(
       ("__dot__" ,(make-now-drawer-const
-                    "fn"
+                    "Proc"
                     (make-raw-now-object-from-pairs
-                      "fn"
-                      `(("__call__" ,(make-now-drawer-const "fn" (make-now.delegator-greet "getter")))
-                        ("__set__"  ,(make-now-drawer-const "fn" (make-now.delegator-greet "setter")))))))
-      ("one"   ,(make-now-drawer-const "string" "delegator rawattr one"))
-      ("two"   ,(make-now-drawer-const "string" "delegator rawattr two"))
-      ("three" ,(make-now-drawer-const "string" "delegator rawattr three"))
-      ("x"     ,(make-now-drawer-var   "string" "delegator rawattr x"))
+                      "Proc"
+                      `(("__call__" ,(make-now-drawer-const "Proc" (make-now.delegator-greet "getter")))
+                        ("__set__"  ,(make-now-drawer-const "Proc" (make-now.delegator-greet "setter")))))))
+      ("one"   ,(make-now-drawer-const "String" "delegator rawattr one"))
+      ("two"   ,(make-now-drawer-const "String" "delegator rawattr two"))
+      ("three" ,(make-now-drawer-const "String" "delegator rawattr three"))
+      ("x"     ,(make-now-drawer-var   "String" "delegator rawattr x"))
   )))
 
 ;;
@@ -258,7 +258,7 @@
 (define (extend-scope-with-builtin-forms-fn scope-to-extend)
   (for-each
     (lambda (info)
-      (extend-scope-with-form-info scope-to-extend "fn" info))
+      (extend-scope-with-form-info scope-to-extend "Fn" info))
     `(
       ;; Comparison operators
       ("eq"   ,(make-now-fn-binary =    ))
@@ -303,11 +303,11 @@
     (lambda (info)
       (extend-scope-with-form-info scope-to-extend "Type" info))
     `(
-      ("int"     "int")
-      ("uint"    "uint")
-      ("string"  "string")
-      ; ("Proc"    "Proc")
-      ("fn"      "fn")
+      ("Int"     "Int")
+      ("Uint"    "Uint")
+      ("String"  "String")
+      ("Proc"    "Proc")
+      ("Fn"      "Fn")
       )))
 
 (define (extend-scope-with-builtins scope-to-extend)

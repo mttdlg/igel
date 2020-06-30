@@ -1,10 +1,4 @@
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;                          ;;
-;;       Base types         ;;
-;;                          ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;
 ;;
 ;; Copyright 2020 Matteo De Luigi
 ;;
@@ -25,23 +19,12 @@
 ;;  You should have received a copy of the GNU General Public License
 ;;  along with IGEL.  If not, see <http://www.gnu.org/licenses/>.
 ;;
+;; A function which returns an 'unique-id generating' function
+;;
+(define (unique-id-gen-factory)
+  (define current-unique-id 0)
+  (lambda ()
+    (let ((result current-unique-id))
+      (set! current-unique-id (+ 1 current-unique-id))
+      result)))
 
-;;
-;; TODO: fix relative paths. Right now we must
-;; express paths with respect to the top file.
-;; We want to express them relative to the current
-;; directory.
-;;
-
-;;
-;; Type system:
-;;
-(load-ct "basetypes/types.scm")
-(load-ct "basetypes/drawer.scm")
-(load-ct "basetypes/object.scm")
-(load-ct "basetypes/syntax-types.scm")
-
-;;
-;; Additional support functions:
-;;
-(load-ct "basetypes/type-support.scm")

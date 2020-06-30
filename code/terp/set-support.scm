@@ -57,19 +57,19 @@
 ;; how proc/functions are written.
 ;;
 ;; Simple approach:
-;; * target._set_ will receive the *unevaluated value*
+;; * target.__set__ will receive the *unevaluated value*
 ;;   (syntax object) and will be responsible
 ;;   for deciding whether to evaluate or delegate it.
 ;;   Does this make the mechanism too complex?
 ;;   Is requiring an [eval value] too much?
 ;;
 ;; Other possibility:
-;; * Attempt to delegate to _set_form_
-;;   * _set_form_ will be responsible to
-;;     delegate along the _set_form_ chain
-;; * if _set_form_ is not available, 
-;;   resolve and delegate to _set_
-;;   * _set_ will delegate along the _set_ chain,
+;; * Attempt to delegate to __set_form__
+;;   * __set_form__ will be responsible to
+;;     delegate along the __set_form__ chain
+;; * if __set_form__ is not available, 
+;;   resolve and delegate to __set__
+;;   * __set__ will delegate along the __set__ chain,
 ;;    but not along the _set_form_ chain?
 ;;
 ;; It probably makes sense to start with the first approach.
@@ -79,24 +79,24 @@
 
 (define (get-callable-for-now.set obj)
   (assert (now-object? obj)) ;; TODO: better error checking/reporting
-  (if (now-object-has-member? obj "__set__")
-      (resolve-as-scheme-callable (get-now-object-member obj "__set__")) ;; rawattr, like for '__dot__'
-      (error (string-append "'set' operation cannot be delegated to object without __set__")))) ;; TODO: better error reporting
+  (if (now-object-has-rawattr? obj "__set__")
+      (resolve-as-scheme-callable (now-object-get-value obj "__set__")) ;; rawattr, like for '__dot__'
+      (error (string-append "'set' operation cannot be delegated to object without __set__")))) ;; TODO: now.Exception ?
 
-(define (set-using-invocation scope invocation-list-nodes value-node)
+(define (set-using-invocation scope-ref invocation-list-nodes value-node)
   (if (null? invocation-list-nodes)
     (error "Cannot have an empty call as first argument of 'set'!")
     (let* ((head-node (car invocation-list-nodes))
-           (head-object (ast-node-eval scope head-node))
-           (head-scheme-callable (get-callable-for-now.set head-object))) ; delegates raising an error if not available.
-      (head-scheme-callable scope
+           (head-object (ast-node-eval scope-ref head-node))
+           (head-scheme-callable (get-callable-for-now.set head-object))) ; callee will raise an error if not available.
+      (head-scheme-callable scope-ref
                             (list head-node
                                   (make-ast-node 'list (cdr invocation-list-nodes))
                                   value-node)))))
 
 (define (set-id-string-to-value scope id-string value)
-  (let* ((drawer (resolve-id-to-drawer-or-complain scope id-string))
+  (let* ((drawer (resolve-id-to-drawer scope id-string))
          (setter (drawer-get-setter drawer)))
     (setter value)
-    none-singleton)) ;; Should this return none-singleton ? Should it return the passed value ?
+    now.none)) ;; Should this return now.none ? Should it return the passed value ?
 

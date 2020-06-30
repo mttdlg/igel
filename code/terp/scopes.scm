@@ -31,96 +31,117 @@
 
 ;;
 ;; First step: define a "scope" object, chainable.
-;; In the future, it might be worth considering
-;; whether or not it makes sense to have an "id-table"
-;; record-type which is used by both scopes and
-;; namespaces.
 ;;
 
-(define (make-sub-scope scope)
-  (make-raw-now-object-from-pairs 'scope `(
-    ("id-table" ,(make-hash-table)) ;; TODO: replace with NAMESPACE. Also provide a 'scope-get-namespace ' convenience function!
-    ("parent"  ,scope)
-    ("on-exit" (fresh-igel-empty-list)) ; For now, empty list. In future, hooks.
-                   ; TODO: remember to call the hooks!
-                   ; on-exit? on-leave?
-                   ; TODO: will have to be an igel-list
-    ; ("__dot__" -> "__call__", "__set__")
-  )))
+(define now.Scope
+  (make-now-class
+    "now.Scope"
+    (list now.Object)))
 
-(define (get-scope-table scope)
-  (get-now-object-raw-member scope "id-table"))
+;
+; TODO: the following three definitions need to be cleaned up.
+; Right now the approach is very hackish/quick-and-dirty.
+;
+(define type-now.ref-to-now.Scope (now.ref now.Scope))
+
+(define null-scope-ref (make-igel-value type-now.ref-to-now.Scope
+                                        null-ref-data))
+
+(define (null-scope-ref? scope-ref)
+  (assert (type-accepts-value? type-now.ref-to-now.Scope scope-ref))
+  (null-ref? scope-ref))
+;
+; Make a new sub scope.
+;
+(define (make-sub-scope ref-to-parent-scope)
+  (make-igel-value
+    now.Scope
+    (make-now-drawer-table-simple-from-data #t
+      `((const "id-table" ,now.idtable ,(make-fresh-idtable))
+        (const "parent"   ,type-now.ref-to-now.Scope ,ref-to-parent-scope)))))
+; Add an "on-exit" field, later?
+
+(define (get-scope-id-table scope)
+  (now-object-get-value scope "id-table"))
 
 (define (get-scope-parent scope)
-  (get-now-object-raw-member scope "parent"))
+  (now-object-get-value scope "parent"))
 
 ;;
 ;; Top scope is pretty much like any other scope,
-;; except its 'parent' scope is none-singleton .
+;; except its 'parent' scope is the null-scope-ref (null ref).
 ;;
-(define top-scope (make-sub-scope none-singleton))
+(define top-scope (make-sub-scope null-scope-ref))
 
-;;
-;; extract-drawer-or-complain looks only in the
-;; scope passed as argument.
-;; It will not search parent/ancestor scopes
-;; if the key is not found in the scope
-;; passed as argument.
-;;
-;; TODO: split into try-extracting-drawer and
-;; extract-drawer-or-complain?
-;;
-(define (extract-drawer-or-complain scope name)
-  (let ((scope-table (get-scope-table scope)))
-    (if (hash-table-exists? scope-table name)
-      (hash-table-ref scope-table name)
-      (scope-error (string-append "Identifier not in scope table: " name)))))
+; ;;
+; ;; scope-extract-drawer looks only in the
+; ;; scope passed as argument.
+; ;; It will not search parent/ancestor scopes
+; ;; if the key is not found in the scope
+; ;; passed as argument.
+; ;;
+; ;; TODO: split off try-extracting-drawer
+; ;;
+; (define (scope-extract-drawer scope name)
+;   (let ((scope-table (get-scope-table scope)))
+;     (if (hash-table-exists? scope-table name)
+;       (hash-table-ref scope-table name)
+;       (scope-error (string-append "Identifier not in scope table: " name)))))
 
 ;;
 ;; Support functions which work with drawers:
 ;;
-;; TODO: change (or add new function(s)) so that
-;; it takes ID NODE instead of NAME.
+;; TODO: add new function(s)) that
+;; take ID NODE instead of NAME?
 ;;
-(define (try-resolving-drawer scope name)
-  (if (none-singleton? scope)
+;; TODO: add something like '-rs' to the function names
+;; to make it clear that they take references to scopes?
+;;
+(define (try-resolving-drawer scope-ref name)
+  (if (null-scope-ref? scope-ref)
     #f
-    (let ((scope-table (get-scope-table scope)))
-      (if (hash-table-exists? scope-table name)
-        (hash-table-ref scope-table name)
+    (let* ((scope (now.ref-deref-nochecks scope-ref))
+           (scope-table (get-scope-id-table scope))
+           (maybe-value (idtable-try-getting-value scope-table name)))
+      (if maybe-value
+        maybe-value
         (try-resolving-drawer (get-scope-parent scope) name)))))
 
-(define (add-drawer-to-scope scope name drawer)
+;;
+;; TODO: try-adding-drawer-to-scope
+;;
+(define (add-drawer-to-scope scope-ref name drawer)
   ;; TODO: Check for existence first!
-  (let ((scope-table (get-scope-table scope)))
+  (assert (not (null-ref? scope-ref)))
+  (let* ((scope (now.ref-deref-nochecks scope-ref))
+         (scope-table (get-scope-id-table scope)))
     ; (write scope-table)
     ; (newline)
-    (if (hash-table-exists? scope-table name)
+    (if (idtable-key-exists? scope-table name)
       (scope-error (string-append "Attempting to add an already"
                                   " existing id to scope: '"
                                   name "'"))
-      (hash-table-set! scope-table
-                       name
-                       drawer))))
+      (idtable-add-new-drawer! scope-table name drawer))))
 
 ;;
 ;; Creating drawers:
 ;;
 
-(define (now-add-drawer scope name kind value)
+(define (now-add-drawer scope-ref name kind value)
   (add-drawer-to-scope
-    scope
+    scope-ref
     name
     (make-now-drawer-var kind value)))
 
-(define (now-add-const scope name kind value)
+(define (now-add-const scope-ref name kind value)
   (add-drawer-to-scope
-    scope
+    scope-ref
     name
     (make-now-drawer-const kind value)))
 
-(define (resolve-id-to-drawer-or-complain scope name)
-  (let ((maybe-drawer (try-resolving-drawer scope name)))
+; (define (resolve-id-to-drawer-or-complain scope-ref name)
+(define (resolve-id-to-drawer scope-ref name)
+  (let ((maybe-drawer (try-resolving-drawer scope-ref name)))
     (if maybe-drawer
       maybe-drawer
       (scope-error (string-append
@@ -129,19 +150,19 @@
                      "'")))))
 
 ;;
-;; Working with data directly:
+;; TODO: the names of these functions are very old.
+;; come up with something more fitting the current
+;; coding conventions.
 ;;
-
-(define (get-drawer-contents drawer)
-  ((drawer-get-getter drawer))) ;; Notice: double parenthesis.
-
-(define (set-drawer-contents drawer value)
-  ((drawer-get-setter drawer) value)) ;; Notice: double parenthesis.
-
-(define (now-get-drawer scope name)
-  (let ((drawer (resolve-id-to-drawer-or-complain scope name)))
+;; now-get-drawer -> scope-get-drawer (and scope-try-getting-drawer)
+;; now-set-drawer -> scope-set-drawer-value!
+(define (scope-get-drawer scope-ref name)
+  (let ((drawer (resolve-id-to-drawer scope-ref name)))
     (get-drawer-contents drawer)))
 
-(define (now-set-drawer-value scope name value)
-  (let ((drawer (resolve-id-to-drawer-or-complain scope name)))
-    ((drawer-get-setter drawer) value)))
+;
+; ; Not used anymore?
+;
+; (define (now-set-drawer-value scope name value)
+;  (let ((drawer (resolve-id-to-drawer-or-complain scope-ref name)))
+;    ((drawer-get-setter drawer) value)))

@@ -20,6 +20,24 @@
 ;;  You should have received a copy of the GNU General Public License
 ;;  along with IGEL.  If not, see <http://www.gnu.org/licenses/>.
 ;;
+
+
+;;
+;; NOTE: the 'inchain' infrastructure was created when we were
+;; planning to expose this part of syntax processing to the user
+;; and possibly allow backtracking. This is no longer the
+;; case, and it might be possible to simplify character
+;; processing.
+;;
+
+;;
+;; NOTE: encapsulation as igel-value
+;; is not expected to be necessary at
+;; this level, since we will not be
+;; exposing the character stream (only
+;; the AST nodes).
+;;
+
 ;;
 ;;
 ;; TODO: provide way to explicitly close
@@ -151,17 +169,22 @@
 (define (location->error-prefix location)
   (string-append "In " (location->string location) ": "))
 
+;; support for creating a singleton
 (define-record-type <inchain-end-of-chain-type>
                     (make-end-of-chain)
                     end-of-chain-type?)
 
-;; Let us create a singleton
+;; Let us create an API to this singleton.
+;; Note: while 'gensym' is not part of R5RS, it seems like
+;; it is widely supported. We might want to define a cleaner
+;; abstracted way to make/check for singletons in the
+;; platform-dependent files.
+;;
 (define end-of-chain (make-end-of-chain))
-(define (end-of-chain? candidate) (eq? candidate end-of-chain))
+(define (end-of-chain? candidate) (end-of-chain-type? candidate))
 
 ;;
-;; TODO: replace the word 'internal' with the word 'private'
-;; (re-align indentation accordingly)
+;; <inchain> proper
 ;;
 (define-record-type <inchain>
                     (make-inchain-private item next-private location)

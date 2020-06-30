@@ -22,7 +22,7 @@
 ;;
 ;; Parsing proceeds like this:
 ;;
-;; top-level statements are /always/ parsed into a list of AST nodes according to
+;; Each top-level statement is /always/ parsed into a list of AST nodes according to
 ;; existing rules, and *then* now-evaluated. Early drafts considered an extensible
 ;; parser (Forth-style, where the now-language would get a chance to get at the
 ;; character stream).
@@ -61,9 +61,9 @@
 ;;        they must explicitly evaluate nodes, and
 ;;        then, maybe, check types.
 ;;
-;;        form Proc while {Expression exp; Block block} {
-;;           set cx [compile-exp Bool exp]
-;;           set cb [compile-block block]
+;;        form proc while {e: expression; b: block} {
+;;           set cx [compile-exp bool e] # result will be in register a0
+;;           set cb [compile-block b]
 ;;           gen-label expression_label # now-expression
 ;;           gen-label end_label        # now-expression
 ;;           asm-out {
@@ -100,8 +100,8 @@
                ; at the point just after the dottable (so that
                ; 'tstream-peek-token' will return 'dot' if there is one)
                ((id) (token->ast-node (tstream-read-token stream))) ; (tstream-read-token stream): the same
-                                                           ; value as tok-first, except that
-                                                           ; we also advance the stream.
+                                                                    ; value as tok-first, except that
+                                                                    ; we also advance the stream.
                ((left-square) (parse-square stream))
                (else (parser-error (string-append 
                                      "This syntactic element cannot"
@@ -184,7 +184,7 @@
   (let ((token (tstream-peek-token stream)))
     ;; TODO: clean up handling of line terminators
     (if (loose-form-terminator? token)
-      (terminator->ast-node (tstream-read-token stream))
+      (make-terminator-marker (tstream-read-token stream))
       (let ((token-kind (token-get-kind token)))
         (case token-kind
           ((whitespace)   (tstream-read-token stream)         ;; discard
@@ -231,18 +231,17 @@
   (let parse-form-helper ((accumulated-items-r '()))
     (let ((pitem (parse-item stream))) ; parsed item
       ;; (write pitem) (newline)
-      (if (not (ast-node-kind-match? pitem 'internal-token)) ;; TODO: instead of an ast-kind,
-                                                             ;; return a different record type.
+      (if (not (terminator-marker? pitem))
         (parse-form-helper (cons pitem accumulated-items-r))
-        ;; Handle internal token
-        (let ((token (ast-node-value pitem)))
+        ;; Handle terminator merker
+        (let ((token (terminator-marker-get-token pitem)))
           (cond
             ((form-terminator? token) ; THe order of checks is important: if 'eol is a terminator, it must be caught here.
              (cons token (make-ast-node 'list (reverse accumulated-items-r))))
             ((token-kind-is? token 'eol) ; If we got here, 'eol is not considered a terminator.
              (parse-form-helper accumulated-items-r))  ; Discard it and proceed
             (else
-               (parser-error (string-append "Unexpected token: "
+               (parser-error (string-append "Unexpected terminator token: "
                                             (symbol->string (car token)))))))))))
 ;;
 ;; Line-parsing functions.
@@ -341,7 +340,15 @@
                                         printable-tby-string "' instead."))))))
 
 ;;
-;; TODO: we'll probably get rid of the following one?
+;; TODO: the current concept no longer considers compilation units
+;; as file-based. The new concept is that we proceed line-by-line,
+;; and any structure that affects semantics (including 'compilation
+;; units', if we still end up having such a concept) needs to be
+;; specified explicitly by using a block construct.
+;;
+;; We will probably get rid of the following procedure, which was
+;; used in the early phase of experimentation when we were still
+;; going with a file-based concept.
 ;;
 
 ;;

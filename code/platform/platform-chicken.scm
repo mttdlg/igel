@@ -38,7 +38,7 @@
     ((_ file-name) 
      (include file-name))))
 
-(require-extension srfi-1)  ; list library (used at the moment?)
+; (require-extension srfi-1)  ; list library (used at the moment?)
 (require-extension srfi-69) ; hashes
 
 (define error-and-exit error)
